@@ -16,7 +16,7 @@ const Banner = () => {
   const fetchBanners = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/content');
+      const response = await axios.get('https://food-new-zqru.onrender.com/api/content');
       
       // Filter only banner category content that is active
       const bannerContent = response.data.filter(
@@ -114,7 +114,7 @@ const Banner = () => {
               backgroundImage: `url(${
                 banner.image.startsWith('http') 
                   ? banner.image 
-                  : `http://localhost:5000${banner.image}`
+                  : `https://food-new-zqru.onrender.com${banner.image}`
               })` 
             }}
           >

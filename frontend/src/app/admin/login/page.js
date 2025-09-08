@@ -17,7 +17,7 @@ export default function AdminLogin() {
 
     try {
       // Use the auth login endpoint instead of contact endpoint
-      const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+      const response = await axios.post('https://food-new-zqru.onrender.com/api/auth/login', formData);
       
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', response.data.token);

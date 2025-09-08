@@ -70,7 +70,7 @@ export default function ManageGallery() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/gallery', {
+      const response = await axios.get('https://food-new-zqru.onrender.com/api/gallery', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGallery(response.data);
@@ -102,9 +102,9 @@ export default function ManageGallery() {
 
     try {
       if (editingItem) {
-        await axios.put(`http://localhost:5000/api/gallery/${editingItem._id}`, data, { headers });
+        await axios.put(`https://food-new-zqru.onrender.com/api/gallery/${editingItem._id}`, data, { headers });
       } else {
-        await axios.post('http://localhost:5000/api/gallery', data, { headers });
+        await axios.post('https://food-new-zqru.onrender.com/api/gallery', data, { headers });
       }
       
       fetchGallery();
@@ -118,7 +118,7 @@ export default function ManageGallery() {
     if (confirm('Are you sure you want to delete this item?')) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:5000/api/gallery/${id}`, {
+        await axios.delete(`https://food-new-zqru.onrender.com/api/gallery/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchGallery();
@@ -336,7 +336,7 @@ export default function ManageGallery() {
             <div key={item._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1">
               <div className="relative">
                 <img 
-                  src={`http://localhost:5000${item.image}`} 
+                  src={`https://food-new-zqru.onrender.com${item.image}`} 
                   alt={item.title}
                   className="w-full h-48 object-cover"
                 />

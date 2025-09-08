@@ -50,7 +50,7 @@ export default function ContactManager() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
-      const response = await axios.get('http://localhost:5000/api/contact', { headers });
+      const response = await axios.get('https://food-new-zqru.onrender.com/api/contact', { headers });
       setContacts(response.data);
     } catch (error) {
       console.error('Error fetching contacts:', error);
@@ -68,7 +68,7 @@ export default function ContactManager() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
-      await axios.put(`http://localhost:5000/api/contact/${id}/read`, {}, { headers });
+      await axios.put(`https://food-new-zqru.onrender.com/api/contact/${id}/read`, {}, { headers });
       
       setContacts(contacts.map(contact => 
         contact._id === id ? { ...contact, isRead: true } : contact
@@ -93,7 +93,7 @@ export default function ContactManager() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
-      await axios.post(`http://localhost:5000/api/contact/${contactId}/reply`, {
+      await axios.post(`https://food-new-zqru.onrender.com/api/contact/${contactId}/reply`, {
         message: replyMessage
       }, { headers });
 
@@ -125,7 +125,7 @@ export default function ContactManager() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
-      await axios.delete(`http://localhost:5000/api/contact/${id}`, { headers });
+      await axios.delete(`https://food-new-zqru.onrender.com/api/contact/${id}`, { headers });
       
       setContacts(contacts.filter(contact => contact._id !== id));
       

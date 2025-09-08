@@ -23,7 +23,7 @@ export default function AdminSettings() {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        "http://localhost:5000/api/admin/update",
+        "https://food-new-zqru.onrender.com/api/admin/update",
         {
           oldPassword: form.oldPassword,
           newEmail: form.newEmail,
