@@ -6,6 +6,7 @@ require("dotenv").config();
 
 
 const adminSettingsRoutes = require("./routes/adminSettings");
+const historyRoutes = require("./routes/history");
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
@@ -36,6 +37,7 @@ app.use("/api/content", require("./routes/content"));
 app.use("/api/gallery", require("./routes/gallery"));
 app.use("/api/contact", require("./routes/contact")); // 👈 contact route from earlier
 app.use("/api/admin", adminSettingsRoutes);
+app.use("/api/history", historyRoutes);
 // After MongoDB connection
 // ----------------- DEFAULT ADMIN -----------------
 const createDefaultAdmin = async () => {
