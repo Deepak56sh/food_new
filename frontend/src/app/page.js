@@ -25,7 +25,7 @@ export default function Home() {
       {/* Featured Menu */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Featured Menu</h2>
+          {/* <h2 className="text-3xl font-bold text-center mb-12">Featured Menu</h2> */}
           <Gallery />
           <div className="text-center mt-8">
             <Link href="/gallery" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg transition">
