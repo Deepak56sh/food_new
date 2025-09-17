@@ -29,7 +29,7 @@ export default function AdminHistory() {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://food-new-zqru.onrender.com/api/history",
+          "https://food-new-85k1.onrender.com/api/history",
           {
             headers: { Authorization: `Bearer ${token}` },
           }

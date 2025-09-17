@@ -16,7 +16,7 @@ const Gallery = ({ limit = null }) => {
   const fetchGalleryItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('https://food-new-zqru.onrender.com/api/gallery');
+      const response = await axios.get('https://food-new-85k1.onrender.com/api/gallery');
       
       let items = response.data;
       
@@ -157,7 +157,7 @@ const Gallery = ({ limit = null }) => {
                 src={
                   item.image.startsWith('http') 
                     ? item.image 
-                    : `https://food-new-zqru.onrender.com${item.image}`
+                    : `https://food-new-85k1.onrender.com${item.image}`
                 }
                 alt={item.title}
                 className="w-full h-48 object-cover"

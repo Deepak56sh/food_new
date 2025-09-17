@@ -58,7 +58,7 @@ export default function Dashboard() {
       const headers = { Authorization: `Bearer ${token}` };
 
       // Fetch contacts
-      const contactsRes = await axios.get('https://food-new-zqru.onrender.com/api/contact', { headers });
+      const contactsRes = await axios.get('https://food-new-85k1.onrender.com/api/contact', { headers });
       const contacts = contactsRes.data;
       
       setContacts(contacts.slice(0, 5)); // Latest 5 contacts

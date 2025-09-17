@@ -26,7 +26,7 @@ const ContactForm = () => {
     setLoading(true);
     
     try {
-      await axios.post('https://food-new-zqru.onrender.com/api/contact', formData);
+      await axios.post('https://food-new-85k1.onrender.com/api/contact', formData);
       setSuccess(true);
       setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (error) {

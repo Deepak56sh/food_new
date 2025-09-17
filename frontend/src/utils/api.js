@@ -2,8 +2,8 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://food-new-zqru.onrender.com/api';
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://food-new-zqru.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://food-new-85k1.onrender.com/api';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://food-new-85k1.onrender.com';
 
 // Create axios instance
 const api = axios.create({

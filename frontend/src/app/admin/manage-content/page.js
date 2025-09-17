@@ -52,7 +52,7 @@ export default function ManageContent() {
   const fetchContent = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('https://food-new-zqru.onrender.com/api/content');
+      const response = await axios.get('https://food-new-85k1.onrender.com/api/content');
       setContent(response.data);
       setFilteredContent(response.data);
     } catch (error) {
@@ -81,9 +81,9 @@ export default function ManageContent() {
 
     try {
       if (editingItem) {
-        await axios.put(`https://food-new-zqru.onrender.com/api/content/${editingItem._id}`, data, { headers });
+        await axios.put(`https://food-new-85k1.onrender.com/api/content/${editingItem._id}`, data, { headers });
       } else {
-        await axios.post('https://food-new-zqru.onrender.com/api/content', data, { headers });
+        await axios.post('https://food-new-85k1.onrender.com/api/content', data, { headers });
       }
       
       fetchContent();
@@ -97,7 +97,7 @@ export default function ManageContent() {
     if (confirm('Are you sure you want to delete this content?')) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`https://food-new-zqru.onrender.com/api/content/${id}`, {
+        await axios.delete(`https://food-new-85k1.onrender.com/api/content/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchContent();
@@ -264,7 +264,7 @@ export default function ManageContent() {
             <div key={item._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200">
               <div className="aspect-w-16 aspect-h-9 bg-gray-100">
                 <img 
-                  src={`https://food-new-zqru.onrender.com${item.image}`} 
+                  src={`https://food-new-85k1.onrender.com${item.image}`} 
                   alt={item.title}
                   className="w-full h-48 object-cover"
                 />
