@@ -88,4 +88,18 @@ router.get("/date-range", auth, async (req, res) => {
   }
 });
 
+router.post('/', auth, async (req, res) => {
+  const { actionType, description } = req.body;
+  const history = new History({
+    actionType,
+    description,
+    user: req.user ? req.user.id : null,
+    data: { manual: true },
+    ipAddress: req.ip,
+  });
+  await history.save();
+  res.status(201).json({ message: 'History entry created', history });
+});
+
+
 module.exports = router;

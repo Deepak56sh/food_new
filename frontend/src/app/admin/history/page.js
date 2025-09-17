@@ -59,17 +59,17 @@ export default function AdminHistory() {
     }
   }, [searchTerm, history]);
 
-  // ✅ Get icon for action type (fallback ke liye agar actionType aya to)
+  // ✅ Get icon for action type
   const getActionIcon = (actionType) => {
     if (!actionType) return <FiActivity className="text-orange-500" />;
-    if (actionType.includes('VIEW')) return <FiEye className="text-blue-500" />;
-    if (actionType.includes('CREATE')) return <FiPlus className="text-green-500" />;
-    if (actionType.includes('UPDATE')) return <FiEdit className="text-yellow-500" />;
-    if (actionType.includes('DELETE')) return <FiTrash2 className="text-red-500" />;
-    if (actionType.includes('GALLERY')) return <FiImage className="text-purple-500" />;
-    if (actionType.includes('CONTACT')) return <FiMail className="text-indigo-500" />;
-    if (actionType.includes('SETTINGS')) return <FiSettings className="text-gray-500" />;
-    if (actionType.includes('LOGIN')) return <FiLogIn className="text-cyan-500" />;
+    if (actionType.includes("VIEW")) return <FiEye className="text-blue-500" />;
+    if (actionType.includes("CREATE")) return <FiPlus className="text-green-500" />;
+    if (actionType.includes("UPDATE")) return <FiEdit className="text-yellow-500" />;
+    if (actionType.includes("DELETE")) return <FiTrash2 className="text-red-500" />;
+    if (actionType.includes("GALLERY")) return <FiImage className="text-purple-500" />;
+    if (actionType.includes("CONTACT")) return <FiMail className="text-indigo-500" />;
+    if (actionType.includes("SETTINGS")) return <FiSettings className="text-gray-500" />;
+    if (actionType.includes("LOGIN")) return <FiLogIn className="text-cyan-500" />;
     return <FiActivity className="text-orange-500" />;
   };
 
@@ -114,7 +114,7 @@ export default function AdminHistory() {
           <div className="space-y-3">
             {filteredHistory.map((item, index) => (
               <div
-                key={index}
+                key={item._id || index}
                 className="bg-gray-50 p-4 rounded-lg border-l-4 border-orange-400 hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-start justify-between">
