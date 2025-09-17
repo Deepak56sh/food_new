@@ -50,9 +50,8 @@ export default function AdminHistory() {
   useEffect(() => {
     if (searchTerm) {
       const filtered = history.filter(item => 
-        item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.actionType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        item.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.user?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredHistory(filtered);
     } else {
@@ -60,8 +59,9 @@ export default function AdminHistory() {
     }
   }, [searchTerm, history]);
 
-  // ✅ Get icon for action type
+  // ✅ Get icon for action type (fallback ke liye agar actionType aya to)
   const getActionIcon = (actionType) => {
+    if (!actionType) return <FiActivity className="text-orange-500" />;
     if (actionType.includes('VIEW')) return <FiEye className="text-blue-500" />;
     if (actionType.includes('CREATE')) return <FiPlus className="text-green-500" />;
     if (actionType.includes('UPDATE')) return <FiEdit className="text-yellow-500" />;
@@ -71,42 +71,6 @@ export default function AdminHistory() {
     if (actionType.includes('SETTINGS')) return <FiSettings className="text-gray-500" />;
     if (actionType.includes('LOGIN')) return <FiLogIn className="text-cyan-500" />;
     return <FiActivity className="text-orange-500" />;
-  };
-
-  // ✅ Format time ago
-  const getTimeAgo = (dateString) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) return 'अभी अभी';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} मिनट पहले`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} घंटे पहले`;
-    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} दिन पहले`;
-    return date.toLocaleDateString('hi-IN');
-  };
-
-  // ✅ Get action in Hindi
-  const getActionInHindi = (actionType) => {
-    const actions = {
-      'CREATE_CONTENT': '📝 नया कंटेंट बनाया',
-      'UPDATE_CONTENT': '✏️ कंटेंट अपडेट किया', 
-      'DELETE_CONTENT': '🗑️ कंटेंट डिलीट किया',
-      'VIEW_CONTENT': '👀 कंटेंट देखा',
-      'CREATE_GALLERY': '🖼️ नई गैलरी इमेज जोड़ी',
-      'UPDATE_GALLERY': '✏️ गैलरी इमेज अपडेट की',
-      'DELETE_GALLERY': '🗑️ गैलरी इमेज डिलीट की',
-      'VIEW_GALLERY': '👀 गैलरी देखी',
-      'VIEW_GALLERY_ADMIN': '👀 एडमिन गैलरी देखी',
-      'CREATE_CONTACT': '📧 नया संपर्क संदेश',
-      'UPDATE_CONTACT': '✏️ संपर्क अपडेट किया',
-      'DELETE_CONTACT': '🗑️ संपर्क डिलीट किया',
-      'VIEW_CONTACT': '👀 संपर्क देखे',
-      'UPDATE_ADMIN_SETTINGS': '⚙️ एडमिन सेटिंग्स अपडेट की',
-      'LOGIN': '🔐 लॉगिन किया',
-      'LOGOUT': '🚪 लॉगआउट किया'
-    };
-    return actions[actionType] || `🔧 ${actionType.replace(/_/g, ' ')}`;
   };
 
   return (
@@ -150,7 +114,7 @@ export default function AdminHistory() {
           <div className="space-y-3">
             {filteredHistory.map((item, index) => (
               <div
-                key={item._id}
+                key={index}
                 className="bg-gray-50 p-4 rounded-lg border-l-4 border-orange-400 hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-start justify-between">
@@ -161,28 +125,18 @@ export default function AdminHistory() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="font-medium text-gray-900">
-                          {getActionInHindi(item.actionType)}
-                        </span>
-                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
-                          {item.actionType}
+                          {item.message}
                         </span>
                       </div>
-                      
-                      <p className="text-gray-700 mb-2">
-                        {item.description}
-                      </p>
                       
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <div className="flex items-center space-x-1">
                           <span>👤</span>
-                          <span>{item.user?.name || 'System'}</span>
+                          <span>{item.user || "System"}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <FiClock />
-                          <span>{getTimeAgo(item.createdAt)}</span>
-                        </div>
-                        <div className="text-xs">
-                          📅 {new Date(item.createdAt).toLocaleString('hi-IN')}
+                          <span>{item.date}</span>
                         </div>
                       </div>
                     </div>
@@ -190,59 +144,6 @@ export default function AdminHistory() {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* ✅ Quick Stats */}
-        {!loading && history.length > 0 && (
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-              <div className="flex items-center">
-                <FiPlus className="text-green-600 mr-2" />
-                <div>
-                  <div className="text-sm text-green-600 font-medium">बनाया गया</div>
-                  <div className="text-xl font-bold text-green-800">
-                    {history.filter(h => h.actionType.includes('CREATE')).length}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-lg border border-yellow-200">
-              <div className="flex items-center">
-                <FiEdit className="text-yellow-600 mr-2" />
-                <div>
-                  <div className="text-sm text-yellow-600 font-medium">अपडेट किया</div>
-                  <div className="text-xl font-bold text-yellow-800">
-                    {history.filter(h => h.actionType.includes('UPDATE')).length}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
-              <div className="flex items-center">
-                <FiTrash2 className="text-red-600 mr-2" />
-                <div>
-                  <div className="text-sm text-red-600 font-medium">डिलीट किया</div>
-                  <div className="text-xl font-bold text-red-800">
-                    {history.filter(h => h.actionType.includes('DELETE')).length}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-              <div className="flex items-center">
-                <FiEye className="text-blue-600 mr-2" />
-                <div>
-                  <div className="text-sm text-blue-600 font-medium">देखा गया</div>
-                  <div className="text-xl font-bold text-blue-800">
-                    {history.filter(h => h.actionType.includes('VIEW')).length}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </div>
