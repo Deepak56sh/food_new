@@ -8,9 +8,9 @@ const router = express.Router();
 router.get('/', auth, async (req, res) => {
   try {
     const history = await History.find()
-      .populate('user', 'name email') // Populate user details
-      .sort({ createdAt: -1 }) // Latest first
-      .limit(1000); // Limit to prevent huge responses
+      .populate('user', 'name email') 
+      .sort({ createdAt: -1 }) 
+      .limit(500); // Latest 500 records
     
     res.json(history);
   } catch (error) {
@@ -19,66 +19,43 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Get history by action type (admin only)
-router.get('/type/:actionType', auth, async (req, res) => {
+// Get recent activity (last 50 records)
+router.get('/recent', auth, async (req, res) => {
   try {
-    const { actionType } = req.params;
-    const history = await History.find({ actionType })
+    const history = await History.find()
       .populate('user', 'name email')
       .sort({ createdAt: -1 })
-      .limit(100);
+      .limit(50);
     
     res.json(history);
   } catch (error) {
-    console.error('Error fetching history by type:', error);
-    res.status(500).json({ message: 'Server error fetching history' });
+    console.error('Error fetching recent history:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Get history stats (admin only)
-router.get('/stats', auth, async (req, res) => {
+// Get history by date range
+router.get('/date-range', auth, async (req, res) => {
   try {
-    const stats = await History.aggregate([
-      {
-        $group: {
-          _id: '$actionType',
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { count: -1 }
-      }
-    ]);
+    const { startDate, endDate } = req.query;
     
-    const totalRecords = await History.countDocuments();
+    let query = {};
+    if (startDate && endDate) {
+      query.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate + 'T23:59:59.999Z')
+      };
+    }
     
-    res.json({
-      totalRecords,
-      actionStats: stats
-    });
+    const history = await History.find(query)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(200);
+    
+    res.json(history);
   } catch (error) {
-    console.error('Error fetching history stats:', error);
-    res.status(500).json({ message: 'Server error fetching stats' });
-  }
-});
-
-// Clear old history (admin only) - Optional
-router.delete('/clear-old', auth, async (req, res) => {
-  try {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    const result = await History.deleteMany({
-      createdAt: { $lt: thirtyDaysAgo }
-    });
-    
-    res.json({
-      message: `Deleted ${result.deletedCount} old history records`,
-      deletedCount: result.deletedCount
-    });
-  } catch (error) {
-    console.error('Error clearing old history:', error);
-    res.status(500).json({ message: 'Server error clearing history' });
+    console.error('Error fetching history by date:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

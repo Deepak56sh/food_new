@@ -5,22 +5,22 @@ import axios from "axios";
 import AdminLayout from "../../../components/AdminLayout";
 import { 
   FiClock, 
-  FiDatabase, 
   FiActivity, 
-  FiFilter, 
   FiSearch,
   FiEye,
   FiPlus,
   FiEdit,
   FiTrash2,
-  FiImage
+  FiImage,
+  FiSettings,
+  FiMail,
+  FiLogIn
 } from "react-icons/fi";
 
 export default function AdminHistory() {
   const [history, setHistory] = useState([]);
   const [filteredHistory, setFilteredHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   // ✅ Fetch history from backend
@@ -46,230 +46,199 @@ export default function AdminHistory() {
     fetchHistory();
   }, []);
 
-  // ✅ Filter and search functionality
+  // ✅ Search functionality
   useEffect(() => {
-    let filtered = history;
-
-    // Filter by action type
-    if (filter) {
-      filtered = filtered.filter(item => 
-        item.actionType.toLowerCase().includes(filter.toLowerCase())
-      );
-    }
-
-    // Search in description
     if (searchTerm) {
-      filtered = filtered.filter(item => 
+      const filtered = history.filter(item => 
         item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.actionType.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      setFilteredHistory(filtered);
+    } else {
+      setFilteredHistory(history);
     }
-
-    setFilteredHistory(filtered);
-  }, [filter, searchTerm, history]);
-
-  // ✅ Get unique action types for filter dropdown
-  const actionTypes = [...new Set(history.map(item => item.actionType))];
+  }, [searchTerm, history]);
 
   // ✅ Get icon for action type
   const getActionIcon = (actionType) => {
-    if (actionType.includes('VIEW')) return <FiEye className="text-blue-600" />;
-    if (actionType.includes('CREATE')) return <FiPlus className="text-green-600" />;
-    if (actionType.includes('UPDATE')) return <FiEdit className="text-yellow-600" />;
-    if (actionType.includes('DELETE')) return <FiTrash2 className="text-red-600" />;
-    if (actionType.includes('GALLERY') || actionType.includes('CONTENT')) return <FiImage className="text-purple-600" />;
-    return <FiDatabase className="text-gray-600" />;
+    if (actionType.includes('VIEW')) return <FiEye className="text-blue-500" />;
+    if (actionType.includes('CREATE')) return <FiPlus className="text-green-500" />;
+    if (actionType.includes('UPDATE')) return <FiEdit className="text-yellow-500" />;
+    if (actionType.includes('DELETE')) return <FiTrash2 className="text-red-500" />;
+    if (actionType.includes('GALLERY')) return <FiImage className="text-purple-500" />;
+    if (actionType.includes('CONTACT')) return <FiMail className="text-indigo-500" />;
+    if (actionType.includes('SETTINGS')) return <FiSettings className="text-gray-500" />;
+    if (actionType.includes('LOGIN')) return <FiLogIn className="text-cyan-500" />;
+    return <FiActivity className="text-orange-500" />;
   };
 
-  // ✅ Get badge color for action type
-  const getBadgeColor = (actionType) => {
-    if (actionType.includes('VIEW')) return "bg-blue-100 text-blue-800";
-    if (actionType.includes('CREATE')) return "bg-green-100 text-green-800";
-    if (actionType.includes('UPDATE')) return "bg-yellow-100 text-yellow-800";
-    if (actionType.includes('DELETE')) return "bg-red-100 text-red-800";
-    return "bg-gray-100 text-gray-800";
-  };
-
-  // ✅ Format date
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
+  // ✅ Format time ago
+  const getTimeAgo = (dateString) => {
     const now = new Date();
-    const diffInHours = (now - date) / (1000 * 60 * 60);
+    const date = new Date(dateString);
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'अभी अभी';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} मिनट पहले`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} घंटे पहले`;
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} दिन पहले`;
+    return date.toLocaleDateString('hi-IN');
+  };
 
-    if (diffInHours < 1) {
-      return "Just now";
-    } else if (diffInHours < 24) {
-      return `${Math.floor(diffInHours)} hours ago`;
-    } else if (diffInHours < 168) { // 7 days
-      return `${Math.floor(diffInHours / 24)} days ago`;
-    } else {
-      return date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    }
+  // ✅ Get action in Hindi
+  const getActionInHindi = (actionType) => {
+    const actions = {
+      'CREATE_CONTENT': '📝 नया कंटेंट बनाया',
+      'UPDATE_CONTENT': '✏️ कंटेंट अपडेट किया', 
+      'DELETE_CONTENT': '🗑️ कंटेंट डिलीट किया',
+      'VIEW_CONTENT': '👀 कंटेंट देखा',
+      'CREATE_GALLERY': '🖼️ नई गैलरी इमेज जोड़ी',
+      'UPDATE_GALLERY': '✏️ गैलरी इमेज अपडेट की',
+      'DELETE_GALLERY': '🗑️ गैलरी इमेज डिलीट की',
+      'VIEW_GALLERY': '👀 गैलरी देखी',
+      'VIEW_GALLERY_ADMIN': '👀 एडमिन गैलरी देखी',
+      'CREATE_CONTACT': '📧 नया संपर्क संदेश',
+      'UPDATE_CONTACT': '✏️ संपर्क अपडेट किया',
+      'DELETE_CONTACT': '🗑️ संपर्क डिलीट किया',
+      'VIEW_CONTACT': '👀 संपर्क देखे',
+      'UPDATE_ADMIN_SETTINGS': '⚙️ एडमिन सेटिंग्स अपडेट की',
+      'LOGIN': '🔐 लॉगिन किया',
+      'LOGOUT': '🚪 लॉगआउट किया'
+    };
+    return actions[actionType] || `🔧 ${actionType.replace(/_/g, ' ')}`;
   };
 
   return (
     <AdminLayout>
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-            <FiActivity className="mr-2 text-orange-600" /> Activity History
+            <FiActivity className="mr-2 text-orange-600" /> 
+            गतिविधि इतिहास (Activity History)
           </h2>
           <div className="text-sm text-gray-500">
-            Total Records: {filteredHistory.length}
+            कुल रिकॉर्ड: {filteredHistory.length}
           </div>
         </div>
 
-        {/* ✅ Filters */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
+        {/* ✅ Search */}
+        <div className="mb-6">
+          <div className="relative">
             <FiSearch className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
-              placeholder="Search history..."
+              placeholder="खोजें..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           </div>
-          <div className="relative">
-            <FiFilter className="absolute left-3 top-3 text-gray-400" />
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none bg-white min-w-[200px]"
-            >
-              <option value="">All Actions</option>
-              {actionTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {loading ? (
-          <div className="text-center py-8">
+          <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-            <p className="text-gray-600 mt-2">Loading history...</p>
+            <p className="text-gray-600 mt-3">लोड हो रहा है...</p>
           </div>
         ) : filteredHistory.length === 0 ? (
-          <div className="text-center py-8">
-            <FiDatabase className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="text-gray-600 mt-2">
-              {history.length === 0 ? "No history records found." : "No records match your search."}
-            </p>
+          <div className="text-center py-12">
+            <FiActivity className="mx-auto h-16 w-16 text-gray-300" />
+            <p className="text-gray-500 mt-4 text-lg">कोई गतिविधि रिकॉर्ड नहीं मिला</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border border-gray-200 rounded-lg">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                    Action
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                    Description
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                    User
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredHistory.map((item) => (
-                  <tr
-                    key={item._id}
-                    className="border-t border-gray-200 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center">
-                        <div className="mr-3">
-                          {getActionIcon(item.actionType)}
-                        </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getBadgeColor(item.actionType)}`}>
-                          {item.actionType.replace(/_/g, ' ')}
+          <div className="space-y-3">
+            {filteredHistory.map((item, index) => (
+              <div
+                key={item._id}
+                className="bg-gray-50 p-4 rounded-lg border-l-4 border-orange-400 hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-3 flex-1">
+                    <div className="mt-1">
+                      {getActionIcon(item.actionType)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="font-medium text-gray-900">
+                          {getActionInHindi(item.actionType)}
+                        </span>
+                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                          {item.actionType}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-700 max-w-md">
-                      <div className="truncate" title={item.description}>
-                        {item.description || "—"}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">
-                      <div className="flex items-center">
-                        <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center mr-2">
-                          <span className="text-xs font-medium text-orange-600">
-                            {(item.user?.name || "S").charAt(0).toUpperCase()}
-                          </span>
+                      
+                      <p className="text-gray-700 mb-2">
+                        {item.description}
+                      </p>
+                      
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <span>👤</span>
+                          <span>{item.user?.name || 'System'}</span>
                         </div>
-                        {item.user?.name || "System"}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      <div className="flex items-center">
-                        <FiClock className="mr-2 text-gray-400" />
-                        <div>
-                          <div className="text-sm">{formatDate(item.createdAt)}</div>
-                          <div className="text-xs text-gray-400">
-                            {new Date(item.createdAt).toLocaleDateString()}
-                          </div>
+                        <div className="flex items-center space-x-1">
+                          <FiClock />
+                          <span>{getTimeAgo(item.createdAt)}</span>
+                        </div>
+                        <div className="text-xs">
+                          📅 {new Date(item.createdAt).toLocaleString('hi-IN')}
                         </div>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* ✅ Summary Stats */}
-        {!loading && history.length > 0 && (
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex items-center">
-                <FiEye className="text-blue-600 mr-2" />
-                <div>
-                  <div className="text-sm text-blue-600">Views</div>
-                  <div className="font-semibold text-blue-800">
-                    {history.filter(h => h.actionType.includes('VIEW')).length}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg">
+            ))}
+          </div>
+        )}
+
+        {/* ✅ Quick Stats */}
+        {!loading && history.length > 0 && (
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
               <div className="flex items-center">
                 <FiPlus className="text-green-600 mr-2" />
                 <div>
-                  <div className="text-sm text-green-600">Created</div>
-                  <div className="font-semibold text-green-800">
+                  <div className="text-sm text-green-600 font-medium">बनाया गया</div>
+                  <div className="text-xl font-bold text-green-800">
                     {history.filter(h => h.actionType.includes('CREATE')).length}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-yellow-50 p-4 rounded-lg">
+            
+            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-lg border border-yellow-200">
               <div className="flex items-center">
                 <FiEdit className="text-yellow-600 mr-2" />
                 <div>
-                  <div className="text-sm text-yellow-600">Updated</div>
-                  <div className="font-semibold text-yellow-800">
+                  <div className="text-sm text-yellow-600 font-medium">अपडेट किया</div>
+                  <div className="text-xl font-bold text-yellow-800">
                     {history.filter(h => h.actionType.includes('UPDATE')).length}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-red-50 p-4 rounded-lg">
+            
+            <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
               <div className="flex items-center">
                 <FiTrash2 className="text-red-600 mr-2" />
                 <div>
-                  <div className="text-sm text-red-600">Deleted</div>
-                  <div className="font-semibold text-red-800">
+                  <div className="text-sm text-red-600 font-medium">डिलीट किया</div>
+                  <div className="text-xl font-bold text-red-800">
                     {history.filter(h => h.actionType.includes('DELETE')).length}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center">
+                <FiEye className="text-blue-600 mr-2" />
+                <div>
+                  <div className="text-sm text-blue-600 font-medium">देखा गया</div>
+                  <div className="text-xl font-bold text-blue-800">
+                    {history.filter(h => h.actionType.includes('VIEW')).length}
                   </div>
                 </div>
               </div>
