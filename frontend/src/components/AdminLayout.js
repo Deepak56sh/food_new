@@ -42,7 +42,7 @@ const AdminLayout = ({ children }) => {
     { href: '/admin/manage-gallery', label: 'Manage Gallery', icon: FiImage },
     { href: '/admin/contact-manger', label: 'Contact Manger', icon: FiMail },
     { href: '/admin/setting_manger', label: 'Setting Manger', icon: FiSettings },
-    { href: '/admin/history', label: 'history', icon: FiSettings },
+    { href: '/admin/history', label: 'history', icon: FiClock },
   ];
 
   const isActive = (path) => router.pathname === path;
