@@ -1,25 +1,48 @@
 // app/admin/contact-manager/page.js
-"use client"
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import AdminLayout from '@/components/AdminLayout';
-import { FiMail, FiUser, FiPhone, FiCalendar, FiSend, FiTrash2, FiEye, FiEyeOff, FiFilter, FiSearch, FiMessageCircle, FiClock, FiCheck, FiAlertCircle, FiRefreshCw, FiCornerUpLeft , FiInbox, FiActivity } from 'react-icons/fi';
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import AdminLayout from "@/components/AdminLayout";
+import {
+  FiMail,
+  FiUser,
+  FiPhone,
+  FiCalendar,
+  FiSend,
+  FiTrash2,
+  FiEye,
+  FiEyeOff,
+  FiFilter,
+  FiSearch,
+  FiMessageCircle,
+  FiClock,
+  FiCheck,
+  FiAlertCircle,
+  FiRefreshCw,
+  FiCornerUpLeft,
+  FiInbox,
+  FiActivity,
+} from "react-icons/fi";
 
 export default function ContactManager() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedContact, setSelectedContact] = useState(null);
-  const [replyMessage, setReplyMessage] = useState('');
+  const [replyMessage, setReplyMessage] = useState("");
   const [replying, setReplying] = useState(false);
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
+  // Fetch contacts and check token safely inside useEffect
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (typeof window === "undefined") return; // Only run in browser
+
+    const token = localStorage.getItem("token");
     if (!token) {
-      router.push('/admin/login');
+      router.push("/admin/login");
       return;
     }
 
@@ -28,16 +51,21 @@ export default function ContactManager() {
 
   const fetchContacts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: `Bearer ${token}` };
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-      const response = await axios.get('https://food-new-85k1.onrender.com/api/contact', { headers });
-      setContacts(response.data);
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(
+        "https://food-new-85k1.onrender.com/api/contact",
+        { headers }
+      );
+
+      setContacts(response.data || []);
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+      console.error("Error fetching contacts:", error);
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        router.push('/admin/login');
+        localStorage.removeItem("token");
+        router.push("/admin/login");
       }
     } finally {
       setLoading(false);
@@ -46,117 +74,144 @@ export default function ContactManager() {
 
   const markAsRead = async (id) => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: `Bearer ${token}` };
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-      await axios.put(`https://food-new-85k1.onrender.com/api/contact/${id}/read`, {}, { headers });
-      
-      setContacts(contacts.map(contact => 
-        contact._id === id ? { ...contact, isRead: true } : contact
-      ));
-      
-      if (selectedContact && selectedContact._id === id) {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.put(
+        `https://food-new-85k1.onrender.com/api/contact/${id}/read`,
+        {},
+        { headers }
+      );
+
+      setContacts(
+        contacts.map((contact) =>
+          contact._id === id ? { ...contact, isRead: true } : contact
+        )
+      );
+
+      if (selectedContact?._id === id) {
         setSelectedContact({ ...selectedContact, isRead: true });
       }
     } catch (error) {
-      console.error('Error marking as read:', error);
+      console.error("Error marking as read:", error);
     }
   };
 
   const sendReply = async (contactId) => {
     if (!replyMessage.trim()) {
-      alert('Please enter a reply message');
+      alert("Please enter a reply message");
       return;
     }
-    
+
     setReplying(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
       const headers = { Authorization: `Bearer ${token}` };
+      await axios.post(
+        `https://food-new-85k1.onrender.com/api/contact/${contactId}/reply`,
+        { message: replyMessage },
+        { headers }
+      );
 
-      await axios.post(`https://food-new-85k1.onrender.com/api/contact/${contactId}/reply`, {
-        message: replyMessage
-      }, { headers });
+      alert("Reply sent successfully!");
+      setReplyMessage("");
 
-      alert('Reply sent successfully!');
-      setReplyMessage('');
-      
       fetchContacts();
-      
-      if (selectedContact && selectedContact._id === contactId) {
+
+      if (selectedContact?._id === contactId) {
         setSelectedContact({
           ...selectedContact,
           isReplied: true,
           replyMessage: replyMessage,
-          repliedAt: new Date()
+          repliedAt: new Date(),
         });
       }
     } catch (error) {
-      console.error('Error sending reply:', error);
-      alert('Failed to send reply. Please try again.');
+      console.error("Error sending reply:", error);
+      alert("Failed to send reply. Please try again.");
     } finally {
       setReplying(false);
     }
   };
 
   const deleteContact = async (id) => {
-    if (!confirm('Are you sure you want to delete this contact?')) return;
-    
-    try {
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: `Bearer ${token}` };
+    if (!confirm("Are you sure you want to delete this contact?")) return;
 
-      await axios.delete(`https://food-new-85k1.onrender.com/api/contact/${id}`, { headers });
-      
-      setContacts(contacts.filter(contact => contact._id !== id));
-      
-      if (selectedContact && selectedContact._id === id) {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(
+        `https://food-new-85k1.onrender.com/api/contact/${id}`,
+        { headers }
+      );
+
+      setContacts(contacts.filter((contact) => contact._id !== id));
+
+      if (selectedContact?._id === id) {
         setSelectedContact(null);
       }
-      
-      alert('Contact deleted successfully!');
+
+      alert("Contact deleted successfully!");
     } catch (error) {
-      console.error('Error deleting contact:', error);
-      alert('Failed to delete contact. Please try again.');
+      console.error("Error deleting contact:", error);
+      alert("Failed to delete contact. Please try again.");
     }
   };
 
-  // Filter and search contacts
-  const filteredContacts = contacts.filter(contact => {
+  // Filter and search
+  const filteredContacts = contacts.filter((contact) => {
     const matchesFilter = (() => {
       switch (filter) {
-        case 'unread':
+        case "unread":
           return !contact.isRead;
-        case 'unreplied':
+        case "unreplied":
           return !contact.isReplied;
         default:
           return true;
       }
     })();
-    
-    const matchesSearch = searchTerm === '' || 
-      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.message.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
+    const matchesSearch =
+      searchTerm === "" ||
+      contact.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.message?.toLowerCase().includes(searchTerm.toLowerCase());
+
     return matchesFilter && matchesSearch;
   });
 
   const getStatusBadge = (contact) => {
     if (contact.isReplied) {
-      return { text: 'Replied', color: 'bg-green-100 text-green-700 border-green-300', icon: FiCheck };
+      return {
+        text: "Replied",
+        color: "bg-green-100 text-green-700 border-green-300",
+        icon: FiCheck,
+      };
     } else if (contact.isRead) {
-      return { text: 'Read', color: 'bg-blue-100 text-blue-700 border-blue-300', icon: FiEye };
+      return {
+        text: "Read",
+        color: "bg-blue-100 text-blue-700 border-blue-300",
+        icon: FiEye,
+      };
     } else {
-      return { text: 'New', color: 'bg-orange-100 text-orange-700 border-orange-300', icon: FiAlertCircle };
+      return {
+        text: "New",
+        color: "bg-orange-100 text-orange-700 border-orange-300",
+        icon: FiAlertCircle,
+      };
     }
   };
 
   const stats = {
     total: contacts.length,
-    unread: contacts.filter(c => !c.isRead).length,
-    unreplied: contacts.filter(c => !c.isReplied).length,
-    replied: contacts.filter(c => c.isReplied).length
+    unread: contacts.filter((c) => !c.isRead).length,
+    unreplied: contacts.filter((c) => !c.isReplied).length,
+    replied: contacts.filter((c) => c.isReplied).length,
   };
 
   if (loading) {
@@ -176,7 +231,8 @@ export default function ContactManager() {
   }
 
   return (
-    <AdminLayout>
+   
+ <AdminLayout>
       <div className="space-y-6">
         {/* Header Section */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-8 text-white shadow-2xl">
@@ -482,3 +538,4 @@ export default function ContactManager() {
     </AdminLayout>
   );
 }
+
