@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  FiLogOut, 
-  FiMenu, 
-  FiX, 
-  FiHome, 
-  FiFileText, 
-  FiImage, 
-  FiMail, 
+import {
+  FiLogOut,
+  FiMenu,
+  FiX,
+  FiHome,
+  FiFileText,
+  FiImage,
+  FiMail,
   FiSettings,
   FiUser,
   FiBell,
@@ -38,7 +38,7 @@ const AdminLayout = ({ children }) => {
   };
 
   const menuItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: FiHome }, 
+    { href: '/admin/dashboard', label: 'Dashboard', icon: FiHome },
     { href: '/admin/manage-content', label: 'Manage Content', icon: FiFileText },
     { href: '/admin/manage-gallery', label: 'Manage Gallery', icon: FiImage },
     { href: '/admin/contact-manger', label: 'Contact Manger', icon: FiMail },
@@ -46,7 +46,8 @@ const AdminLayout = ({ children }) => {
     { href: '/admin/history', label: 'history', icon: FiClock },
   ];
 
-  const isActive = (path) => router.pathname === path;
+  // const isActive = (path) => router.pathname === path;
+  const isActive = (path) => router.pathname.startsWith(path);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -56,13 +57,13 @@ const AdminLayout = ({ children }) => {
           <div className="flex justify-between items-center">
             {/* Left Section */}
             <div className="flex items-center space-x-4">
-              <button 
+              <button
                 className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-all duration-200"
                 onClick={() => setIsOpen(!isOpen)}
               >
                 {isOpen ? <FiX size={20} /> : <FiMenu size={20} />}
               </button>
-              
+
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">A</span>
@@ -72,11 +73,11 @@ const AdminLayout = ({ children }) => {
                     Admin Panel
                   </h1>
                   <p className="text-xs text-slate-500">
-                    {currentTime.toLocaleDateString('en-US', { 
-                      weekday: 'short', 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
+                    {currentTime.toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
                     })}
                   </p>
                 </div>
@@ -103,12 +104,12 @@ const AdminLayout = ({ children }) => {
                   <span className="text-xs text-white font-bold">3</span>
                 </span>
               </button>
-              
+
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                 <FiUser size={16} className="text-white" />
               </div>
-              
-              <button 
+
+              <button
                 onClick={handleLogout}
                 className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
               >
@@ -122,10 +123,9 @@ const AdminLayout = ({ children }) => {
 
       <div className="flex">
         {/* Sidebar */}
-        <div className={`${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:relative z-40 w-72 bg-white/90 backdrop-blur-md shadow-2xl min-h-screen transition-transform duration-300 ease-in-out`}>
-          
+        <div className={`${isOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0 fixed lg:relative z-40 w-72 bg-white/90 backdrop-blur-md shadow-2xl min-h-screen transition-transform duration-300 ease-in-out`}>
+
           {/* Sidebar Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="flex items-center space-x-3">
@@ -145,23 +145,22 @@ const AdminLayout = ({ children }) => {
               {menuItems.map((item) => {
                 const IconComponent = item.icon;
                 return (
-                  <Link 
+                  <Link
                     key={item.href}
                     href={item.href}
-                    className={`group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      isActive(item.href)
-                        ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105' 
+                    className={`group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive(item.href)
+                        ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105'
                         : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:transform hover:scale-105'
-                    }`}
+                      }`}
                   >
-                    <IconComponent 
-                      size={20} 
-                      className={`${
-                        isActive(item.href) 
-                          ? 'text-white' 
-                          : 'text-slate-500 group-hover:text-orange-500'
-                      } transition-colors duration-200`} 
+                    <IconComponent
+                      size={20}
+                      className={`${isActive(item.href)
+                          ? 'text-white'
+                          : 'text-orange-500 group-hover:text-orange-600'
+                        } transition-colors duration-200`}
                     />
+
                     <span className="font-medium">{item.label}</span>
                     {isActive(item.href) && (
                       <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
@@ -190,7 +189,7 @@ const AdminLayout = ({ children }) => {
 
         {/* Overlay for mobile */}
         {isOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
             onClick={() => setIsOpen(false)}
           />
@@ -210,10 +209,10 @@ const AdminLayout = ({ children }) => {
                   <div className="hidden md:flex items-center space-x-4">
                     <div className="text-right">
                       <p className="text-2xl font-bold text-slate-800">
-                        {currentTime.toLocaleTimeString('en-US', { 
-                          hour: '2-digit', 
+                        {currentTime.toLocaleTimeString('en-US', {
+                          hour: '2-digit',
                           minute: '2-digit',
-                          hour12: true 
+                          hour12: true
                         })}
                       </p>
                       <p className="text-sm text-slate-500">Current Time</p>
