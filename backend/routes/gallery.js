@@ -19,15 +19,15 @@ const upload = multer({ storage });
 
 // ------------------- ROUTES -------------------
 
-// Get all gallery items (public) 👉 ❌ no history log
-router.get('/', async (req, res) => {
-  try {
-    const gallery = await Gallery.find({ isActive: true }).sort({ createdAt: -1 });
-    res.json(gallery);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+// // Get all gallery items (public) 👉 ❌ no history log
+// router.get('/', async (req, res) => {
+//   try {
+//     const gallery = await Gallery.find({ isActive: true }).sort({ createdAt: -1 });
+//     res.json(gallery);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// });
 
 // Get all gallery items (admin) 👉 ❌ no history log
 router.get('/admin', auth, async (req, res) => {
