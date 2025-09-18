@@ -1,15 +1,31 @@
 // pages/about.js
+"use client";
 
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function About() {
+  const [story, setStory] = useState(null);
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const res = await axios.get('https://food-new-85k1.onrender.com/api/about'); // aapka API endpoint
+        setStory(res.data);
+      } catch (error) {
+        console.error('Error fetching About content:', error);
+      }
+    };
+    fetchStory();
+  }, []);
+
   return (
     <div>
 
-      
       {/* Hero Section */}
       <section className="py-16 bg-orange-50 About_banner">
         <div className="container mx-auto px-4 text-center relative">
-          <h1 className="text-4xl font-bold mb-6 text-ornage">About FoodDelight</h1>
+          <h1 className="text-4xl font-bold mb-6 text-orange">About FoodDelight</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             A culinary journey that began with passion and continues with dedication to serve the finest food experience.
           </p>
@@ -22,28 +38,16 @@ export default function About() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <img 
-                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
+                src={story?.image || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"}
                 alt="Our Story"
                 className="rounded-lg shadow-lg"
               />
             </div>
             <div>
-              <h2 className="text-3xl font-bold mb-6">Our Story</h2>
-              <p className="text-gray-600 mb-4">
-                Founded in 2020, FoodDelight started as a small family kitchen with a big dream - 
-                to bring authentic, delicious food to our community. What began as a passion project 
-                has grown into a beloved restaurant known for its quality and taste.
-              </p>
-              <p className="text-gray-600 mb-4">
-                We believe that food is more than just sustenance; it's a way to bring people together, 
-                create memories, and celebrate life's special moments. Every dish we prepare is made with 
-                love, using only the freshest ingredients sourced from local farmers.
-              </p>
-              <p className="text-gray-600">
-                Our team of experienced chefs combines traditional cooking methods with modern techniques 
-                to create dishes that are both authentic and innovative. We're committed to providing 
-                an exceptional dining experience for every guest.
-              </p>
+              <h2 className="text-3xl font-bold mb-6">{story?.title || "Our Story"}</h2>
+              <p className="text-gray-600 mb-4">{story?.paragraph1 || "Founded in 2020, FoodDelight started as a small family kitchen with a big dream..."}</p>
+              <p className="text-gray-600 mb-4">{story?.paragraph2 || "We believe that food is more than just sustenance; it's a way to bring people together..."}</p>
+              <p className="text-gray-600">{story?.paragraph3 || "Our team of experienced chefs combines traditional cooking methods with modern techniques..."}</p>
             </div>
           </div>
         </div>
@@ -52,7 +56,7 @@ export default function About() {
       {/* Team Section */}
       <section className="py-16 bg-gray-50 sun_sine">
         <div className="container mx-auto px-4 relative">
-          <h2 className="text-3xl font-bold text-center mb-12 text-ornage">Meet Our Team</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-orange">Meet Our Team</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <img 
@@ -60,7 +64,7 @@ export default function About() {
                 alt="Chef"
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
               />
-              <h3 className="font-semibold text-lg text-ornage">Chef Rajesh Kumar</h3>
+              <h3 className="font-semibold text-lg text-orange">Chef Rajesh Kumar</h3>
               <p className="text-gray-600">Head Chef</p>
             </div>
             <div className="text-center">
@@ -69,7 +73,7 @@ export default function About() {
                 alt="Manager"
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
               />
-              <h3 className="font-semibold text-lg text-ornage">Priya Sharma</h3>
+              <h3 className="font-semibold text-lg text-orange">Priya Sharma</h3>
               <p className="text-gray-600">Restaurant Manager</p>
             </div>
             <div className="text-center">
@@ -78,7 +82,7 @@ export default function About() {
                 alt="Sous Chef"
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
               />
-              <h3 className="font-semibold text-lg text-ornage">Amit Patel</h3>
+              <h3 className="font-semibold text-lg text-orange">Amit Patel</h3>
               <p className="text-gray-600">Sous Chef</p>
             </div>
           </div>
@@ -88,4 +92,3 @@ export default function About() {
     </div>
   );
 }
-
