@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import AdminLayout from "../../../components/AdminLayout";
@@ -13,15 +13,29 @@ export default function AdminSettings() {
     newPassword: "",
   });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false); // ✅ Success state
+  const [success, setSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
-  // ✅ Handle update
+  // ✅ Ensure component is mounted before accessing localStorage
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // ✅ Handle update - only run after component is mounted
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!mounted) return;
+
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        alert("No authentication token found. Please login again.");
+        router.push("/admin/login");
+        return;
+      }
+
       await axios.put(
         "https://food-new-85k1.onrender.com/api/admin/update",
         {
@@ -46,6 +60,20 @@ export default function AdminSettings() {
       setLoading(false);
     }
   };
+
+  // ✅ Don't render until mounted
+  if (!mounted) {
+    return (
+      <AdminLayout>
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 max-w-lg mx-auto">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+            <p className="text-gray-600 mt-3">Loading...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -106,7 +134,7 @@ export default function AdminSettings() {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center"
+                className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center disabled:opacity-50"
               >
                 <FiCheck className="mr-2" />{" "}
                 {loading ? "Updating..." : "Update Admin"}
