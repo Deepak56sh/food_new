@@ -1,7 +1,7 @@
 // components/AdminLayout.js
 "use client"
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   FiLogOut,
@@ -21,9 +21,12 @@ import {
 const AdminLayout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
+    setMounted(true);
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -46,8 +49,22 @@ const AdminLayout = ({ children }) => {
     { href: '/admin/history', label: 'history', icon: FiClock },
   ];
 
-  // const isActive = (path) => router.pathname === path;
-  const isActive = (path) => router.pathname.startsWith(path);
+  // ✅ Fixed isActive function with mounted check
+  const isActive = (path) => {
+    if (!mounted || !pathname) return false;
+    return pathname.startsWith(path);
+  };
+
+  // Don't render until mounted to avoid SSR issues
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
