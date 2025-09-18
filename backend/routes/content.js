@@ -12,7 +12,10 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
+    cb(
+      null,
+      Date.now() + '-' + Math.round(Math.random() * 1e9) + path.extname(file.originalname)
+    );
   }
 });
 
@@ -20,7 +23,7 @@ const upload = multer({ storage });
 
 // ------------------- ROUTES -------------------
 
-// Get all content 👉 ❌ no history log for view
+// ✅ Public content fetch (no history log)
 router.get('/', async (req, res) => {
   try {
     const content = await Content.find().sort({ createdAt: -1 });
@@ -30,7 +33,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Create content (admin only)
+// ✅ Create content (admin only, logs history)
 router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
     const { title, description, category } = req.body;
@@ -44,7 +47,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 
     await content.save();
 
-    // ✅ Log history
+    // History log
     await addHistory(
       "CREATE_CONTENT",
       `📝 New content created: ${title}`,
@@ -59,7 +62,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Update content
+// ✅ Update content (logs history)
 router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     const { title, description, category, isActive } = req.body;
@@ -71,7 +74,6 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
 
     const content = await Content.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
-    // ✅ Log history
     if (content) {
       await addHistory(
         "UPDATE_CONTENT",
@@ -88,12 +90,11 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Delete content
+// ✅ Delete content (logs history)
 router.delete('/:id', auth, async (req, res) => {
   try {
     const deleted = await Content.findByIdAndDelete(req.params.id);
 
-    // ✅ Log history
     if (deleted) {
       await addHistory(
         "DELETE_CONTENT",
