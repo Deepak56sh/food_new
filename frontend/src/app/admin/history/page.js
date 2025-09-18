@@ -23,13 +23,27 @@ export default function AdminHistory() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [mounted, setMounted] = useState(false);
   const itemsPerPage = 20;
 
-  // ✅ Fetch history
+  // ✅ Ensure component is mounted before accessing localStorage
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // ✅ Fetch history - only run after component is mounted
+  useEffect(() => {
+    if (!mounted) return;
+
     const fetchHistory = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found");
+          setLoading(false);
+          return;
+        }
+
         const res = await axios.get(
           "https://food-new-85k1.onrender.com/api/history",
           {
@@ -46,7 +60,7 @@ export default function AdminHistory() {
     };
 
     fetchHistory();
-  }, []);
+  }, [mounted]);
 
   // ✅ Search functionality
   useEffect(() => {
@@ -61,6 +75,20 @@ export default function AdminHistory() {
       setFilteredHistory(history);
     }
   }, [searchTerm, history]);
+
+  // ✅ Don't render until mounted
+  if (!mounted) {
+    return (
+      <AdminLayout className="text-orange-400">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+            <p className="text-gray-600 mt-3">लोड हो रहा है...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   // ✅ Pagination
   const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
