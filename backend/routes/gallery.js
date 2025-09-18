@@ -19,7 +19,7 @@ const upload = multer({ storage });
 
 // ------------------- ROUTES -------------------
 
-// Get all gallery items (public) 👉 ❌ no history log
+// ✅ Public fetch (no history)
 router.get('/', async (req, res) => {
   try {
     const gallery = await Gallery.find({ isActive: true }).sort({ createdAt: -1 });
@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get all gallery items (admin) 👉 ❌ no history log
+// ✅ Admin fetch (no history)
 router.get('/admin', auth, async (req, res) => {
   try {
     const gallery = await Gallery.find().sort({ createdAt: -1 });
@@ -39,7 +39,7 @@ router.get('/admin', auth, async (req, res) => {
   }
 });
 
-// Create gallery item
+// ✅ Create gallery item (logs history)
 router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
     const { title, description, category, price } = req.body;
@@ -54,7 +54,6 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 
     await galleryItem.save();
 
-    // ✅ Log history
     await addHistory(
       "CREATE_GALLERY",
       `🖼️ Gallery item created: ${title}`,
@@ -69,7 +68,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Update gallery item
+// ✅ Update gallery item (logs history)
 router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     const { title, description, category, price, isActive } = req.body;
@@ -80,7 +79,6 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
 
     const galleryItem = await Gallery.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
-    // ✅ Log history
     if (galleryItem) {
       await addHistory(
         "UPDATE_GALLERY",
@@ -97,12 +95,11 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Delete gallery item
+// ✅ Delete gallery item (logs history)
 router.delete('/:id', auth, async (req, res) => {
   try {
     const deleted = await Gallery.findByIdAndDelete(req.params.id);
 
-    // ✅ Log history
     if (deleted) {
       await addHistory(
         "DELETE_GALLERY",
