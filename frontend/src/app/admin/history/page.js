@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import AdminLayout from "../../../components/AdminLayout";
-import { 
-  FiClock, 
-  FiActivity, 
+import {
+  FiClock,
+  FiActivity,
   FiSearch,
   FiEye,
   FiPlus,
@@ -14,7 +14,7 @@ import {
   FiImage,
   FiSettings,
   FiMail,
-  FiLogIn
+  FiLogIn,
 } from "react-icons/fi";
 
 export default function AdminHistory() {
@@ -46,12 +46,13 @@ export default function AdminHistory() {
     fetchHistory();
   }, []);
 
-  // ✅ Search functionality
+  // ✅ Search filter
   useEffect(() => {
     if (searchTerm) {
-      const filtered = history.filter(item => 
-        item.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.user?.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = history.filter(
+        (item) =>
+          item.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.user?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredHistory(filtered);
     } else {
@@ -62,14 +63,22 @@ export default function AdminHistory() {
   // ✅ Get icon for action type
   const getActionIcon = (actionType) => {
     if (!actionType) return <FiActivity className="text-orange-500" />;
-    if (actionType.includes("VIEW")) return <FiEye className="text-blue-500" />;
-    if (actionType.includes("CREATE")) return <FiPlus className="text-green-500" />;
-    if (actionType.includes("UPDATE")) return <FiEdit className="text-yellow-500" />;
-    if (actionType.includes("DELETE")) return <FiTrash2 className="text-red-500" />;
-    if (actionType.includes("GALLERY")) return <FiImage className="text-purple-500" />;
-    if (actionType.includes("CONTACT")) return <FiMail className="text-indigo-500" />;
-    if (actionType.includes("SETTINGS")) return <FiSettings className="text-gray-500" />;
-    if (actionType.includes("LOGIN")) return <FiLogIn className="text-cyan-500" />;
+    if (actionType.includes("VIEW"))
+      return <FiEye className="text-blue-500" />;
+    if (actionType.includes("CREATE"))
+      return <FiPlus className="text-green-500" />;
+    if (actionType.includes("UPDATE"))
+      return <FiEdit className="text-yellow-500" />;
+    if (actionType.includes("DELETE"))
+      return <FiTrash2 className="text-red-500" />;
+    if (actionType.includes("GALLERY"))
+      return <FiImage className="text-purple-500" />;
+    if (actionType.includes("CONTACT"))
+      return <FiMail className="text-indigo-500" />;
+    if (actionType.includes("SETTINGS"))
+      return <FiSettings className="text-gray-500" />;
+    if (actionType.includes("LOGIN"))
+      return <FiLogIn className="text-cyan-500" />;
     return <FiActivity className="text-orange-500" />;
   };
 
@@ -78,7 +87,7 @@ export default function AdminHistory() {
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-            <FiActivity className="mr-2 text-orange-600" /> 
+            <FiActivity className="mr-2 text-orange-600" />
             गतिविधि इतिहास (Activity History)
           </h2>
           <div className="text-sm text-gray-500">
@@ -108,42 +117,49 @@ export default function AdminHistory() {
         ) : filteredHistory.length === 0 ? (
           <div className="text-center py-12">
             <FiActivity className="mx-auto h-16 w-16 text-gray-300" />
-            <p className="text-gray-500 mt-4 text-lg">कोई गतिविधि रिकॉर्ड नहीं मिला</p>
+            <p className="text-gray-500 mt-4 text-lg">
+              कोई गतिविधि रिकॉर्ड नहीं मिला
+            </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredHistory.map((item, index) => (
-              <div
-                key={item._id || index}
-                className="bg-gray-50 p-4 rounded-lg border-l-4 border-orange-400 hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3 flex-1">
-                    <div className="mt-1">
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto border-collapse">
+              <thead>
+                <tr className="bg-gray-100 text-left text-gray-700 text-sm">
+                  <th className="px-4 py-3">क्रिया</th>
+                  <th className="px-4 py-3">विवरण</th>
+                  <th className="px-4 py-3">यूज़र</th>
+                  <th className="px-4 py-3">IP पता</th>
+                  <th className="px-4 py-3">समय</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredHistory.map((item, index) => (
+                  <tr
+                    key={item._id || index}
+                    className="border-b hover:bg-gray-50 transition"
+                  >
+                    <td className="px-4 py-3 flex items-center space-x-2">
                       {getActionIcon(item.actionType)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-gray-900">
-                          {item.message}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <span>👤</span>
-                          <span>{item.user || "System"}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <FiClock />
-                          <span>{item.date}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                      <span className="text-gray-800 font-medium">
+                        {item.actionType}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">{item.message}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {item.user || "System"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 text-sm">
+                      {item.ipAddress || "N/A"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 text-sm flex items-center space-x-1">
+                      <FiClock />
+                      <span>{item.date}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
