@@ -37,7 +37,7 @@ export default function AdminHistory() {
 
     const fetchHistory = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
         if (!token) {
           console.error("No token found");
           setLoading(false);

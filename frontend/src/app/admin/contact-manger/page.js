@@ -46,7 +46,7 @@ export default function ContactManager() {
   useEffect(() => {
     if (!isClient) return; // Wait for client-side hydration
 
-    const token = localStorage.getItem("token");
+    const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
     if (!token) {
       router.push("/admin/login");
       return;
@@ -60,7 +60,7 @@ export default function ContactManager() {
       // Additional safety check
       if (typeof window === "undefined") return;
       
-      const token = localStorage.getItem("token");
+      const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
       if (!token) return;
 
       const headers = { Authorization: `Bearer ${token}` };
@@ -87,7 +87,7 @@ export default function ContactManager() {
     try {
       if (typeof window === "undefined") return;
       
-      const token = localStorage.getItem("token");
+      const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
       if (!token) return;
 
       const headers = { Authorization: `Bearer ${token}` };
@@ -121,7 +121,7 @@ export default function ContactManager() {
     try {
       if (typeof window === "undefined") return;
       
-      const token = localStorage.getItem("token");
+      const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
       if (!token) return;
 
       const headers = { Authorization: `Bearer ${token}` };
@@ -158,7 +158,7 @@ export default function ContactManager() {
     try {
       if (typeof window === "undefined") return;
       
-      const token = localStorage.getItem("token");
+      const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
       if (!token) return;
 
       const headers = { Authorization: `Bearer ${token}` };

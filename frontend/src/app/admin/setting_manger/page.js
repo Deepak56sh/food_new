@@ -29,7 +29,7 @@ export default function AdminSettings() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
       if (!token) {
         alert("No authentication token found. Please login again.");
         router.push("/admin/login");
