@@ -133,10 +133,10 @@ export default function AdminHistory() {
                 <tbody>
                   {currentData.map((item, index) => (
                     <tr key={item._id || index} className="border-t hover:bg-gray-50">
-                      <td className="px-4 py-2">{getActionIcon(item.actionType)}</td>
-                      <td className="px-4 py-2">{item.message}</td>
-                      <td className="px-4 py-2">{item.user || "System"}</td>
-                      <td className="px-4 py-2 flex items-center space-x-1">
+                      <td className="px-4 py-2 text-gray-400">{getActionIcon(item.actionType)}</td>
+                      <td className="px-4 py-2 text-gray-400">{item.message}</td>
+                      <td className="px-4 py-2 text-gray-400">{item.user || "System"}</td>
+                      <td className="px-4 py-2 flex items-center space-x-1 text-gray-400">
                         <FiClock className="text-gray-500" />
                         <span>{item.date}</span>
                       </td>
