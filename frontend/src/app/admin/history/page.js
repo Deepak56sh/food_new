@@ -81,7 +81,7 @@ export default function AdminHistory() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout className="text-orange-400">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
