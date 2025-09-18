@@ -14,7 +14,8 @@ import {
   FiSettings,
   FiUser,
   FiBell,
-  FiSearch
+  FiSearch,
+  FiClock
 } from 'react-icons/fi';
 
 const AdminLayout = ({ children }) => {
