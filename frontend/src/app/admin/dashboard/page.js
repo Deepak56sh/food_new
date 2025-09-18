@@ -33,9 +33,28 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false); // Add client-side check
+  const [isMobile, setIsMobile] = useState(false); // Add mobile state
   const router = useRouter();
 
+  // First useEffect: Set client state and check mobile
   useEffect(() => {
+    setIsClient(true);
+    setIsMobile(window.innerWidth < 640);
+    
+    // Add resize listener
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Second useEffect: Handle authentication and data fetching
+  useEffect(() => {
+    if (!isClient) return; // Wait for client-side hydration
+
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) {
       router.push('/admin/login');
@@ -50,16 +69,20 @@ export default function Dashboard() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [router]);
+  }, [router, isClient]);
 
   const fetchDashboardData = async () => {
     try {
+      if (typeof window === 'undefined') return;
+      
       const token = localStorage.getItem('token');
+      if (!token) return;
+      
       const headers = { Authorization: `Bearer ${token}` };
 
       // Fetch contacts
       const contactsRes = await axios.get('https://food-new-85k1.onrender.com/api/contact', { headers });
-      const contacts = contactsRes.data;
+      const contacts = contactsRes.data || [];
       
       setContacts(contacts.slice(0, 5)); // Latest 5 contacts
       setStats({
@@ -70,7 +93,7 @@ export default function Dashboard() {
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401 && typeof window !== 'undefined') {
         localStorage.removeItem('token');
         router.push('/admin/login');
       }
@@ -107,6 +130,11 @@ export default function Dashboard() {
       </div>
     </div>
   );
+
+  // Don't render until client-side hydration is complete
+  if (!isClient) {
+    return null; // or a simple loading spinner
+  }
 
   if (loading) {
     return (
@@ -183,9 +211,9 @@ export default function Dashboard() {
                 </div>
                 <p className="text-orange-100 text-xs sm:text-sm">
                   {currentTime.toLocaleDateString('en-US', { 
-                    weekday: window.innerWidth < 640 ? 'short' : 'long',
+                    weekday: isMobile ? 'short' : 'long',
                     year: 'numeric', 
-                    month: window.innerWidth < 640 ? 'short' : 'long', 
+                    month: isMobile ? 'short' : 'long', 
                     day: 'numeric' 
                   })}
                 </p>
@@ -335,12 +363,12 @@ export default function Dashboard() {
                     <div className="flex items-start space-x-3 mb-3">
                       <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-semibold text-sm">
-                          {contact.name.charAt(0).toUpperCase()}
+                          {contact.name ? contact.name.charAt(0).toUpperCase() : 'U'}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-800 truncate">{contact.name}</p>
-                        <p className="text-slate-500 text-sm truncate">{contact.email}</p>
+                        <p className="font-semibold text-slate-800 truncate">{contact.name || 'Unknown'}</p>
+                        <p className="text-slate-500 text-sm truncate">{contact.email || 'No email'}</p>
                       </div>
                       <div className="flex items-center space-x-1">
                         {contact.isRead ? (
@@ -352,16 +380,16 @@ export default function Dashboard() {
                     </div>
                     
                     <div className="mb-3">
-                      <p className="text-slate-700 text-sm line-clamp-2">{contact.message}</p>
+                      <p className="text-slate-700 text-sm line-clamp-2">{contact.message || 'No message'}</p>
                     </div>
                     
                     <div className="flex items-center justify-between">
                       <div className="text-slate-600 text-xs">
-                        <p>{new Date(contact.createdAt).toLocaleDateString()}</p>
-                        <p>{new Date(contact.createdAt).toLocaleTimeString('en-US', {
+                        <p>{contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'Unknown date'}</p>
+                        <p>{contact.createdAt ? new Date(contact.createdAt).toLocaleTimeString('en-US', {
                           hour: '2-digit',
                           minute: '2-digit'
-                        })}</p>
+                        }) : 'Unknown time'}</p>
                       </div>
                       
                       <div className="flex items-center space-x-2">
@@ -415,18 +443,18 @@ export default function Dashboard() {
                         <div className="flex items-center space-x-2 sm:space-x-3">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-white font-semibold text-xs sm:text-sm">
-                              {contact.name.charAt(0).toUpperCase()}
+                              {contact.name ? contact.name.charAt(0).toUpperCase() : 'U'}
                             </span>
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-slate-800 text-sm sm:text-base truncate">{contact.name}</p>
-                            <p className="text-slate-500 text-xs sm:text-sm truncate">{contact.email}</p>
+                            <p className="font-semibold text-slate-800 text-sm sm:text-base truncate">{contact.name || 'Unknown'}</p>
+                            <p className="text-slate-500 text-xs sm:text-sm truncate">{contact.email || 'No email'}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4">
                         <div className="max-w-xs">
-                          <p className="text-slate-700 truncate font-medium text-sm sm:text-base">{contact.message}</p>
+                          <p className="text-slate-700 truncate font-medium text-sm sm:text-base">{contact.message || 'No message'}</p>
                         </div>
                       </td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4">
@@ -448,13 +476,13 @@ export default function Dashboard() {
                       <td className="px-4 sm:px-6 py-3 sm:py-4">
                         <div className="text-slate-600">
                           <p className="font-medium text-sm sm:text-base">
-                            {new Date(contact.createdAt).toLocaleDateString()}
+                            {contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'Unknown date'}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {new Date(contact.createdAt).toLocaleTimeString('en-US', {
+                            {contact.createdAt ? new Date(contact.createdAt).toLocaleTimeString('en-US', {
                               hour: '2-digit',
                               minute: '2-digit'
-                            })}
+                            }) : 'Unknown time'}
                           </p>
                         </div>
                       </td>
