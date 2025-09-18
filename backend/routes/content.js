@@ -20,15 +20,15 @@ const upload = multer({ storage });
 
 // ------------------- ROUTES -------------------
 
-// // Get all content 👉 ❌ no history log for view
-// router.get('/', async (req, res) => {
-//   try {
-//     const content = await Content.find().sort({ createdAt: -1 });
-//     res.json(content);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// });
+// Get all content 👉 ❌ no history log for view
+router.get('/', async (req, res) => {
+  try {
+    const content = await Content.find().sort({ createdAt: -1 });
+    res.json(content);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Create content (admin only)
 router.post('/', auth, upload.single('image'), async (req, res) => {
