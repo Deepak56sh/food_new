@@ -34,11 +34,17 @@ export default function ContactManager() {
   const [replying, setReplying] = useState(false);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isClient, setIsClient] = useState(false); // Add client-side check
   const router = useRouter();
 
-  // Fetch contacts and check token safely inside useEffect
+  // First useEffect to set client state
   useEffect(() => {
-    if (typeof window === "undefined") return; // Only run in browser
+    setIsClient(true);
+  }, []);
+
+  // Second useEffect to handle authentication and data fetching
+  useEffect(() => {
+    if (!isClient) return; // Wait for client-side hydration
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -47,10 +53,13 @@ export default function ContactManager() {
     }
 
     fetchContacts();
-  }, [router]);
+  }, [router, isClient]); // Add isClient as dependency
 
   const fetchContacts = async () => {
     try {
+      // Additional safety check
+      if (typeof window === "undefined") return;
+      
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -64,7 +73,9 @@ export default function ContactManager() {
     } catch (error) {
       console.error("Error fetching contacts:", error);
       if (error.response?.status === 401) {
-        localStorage.removeItem("token");
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("token");
+        }
         router.push("/admin/login");
       }
     } finally {
@@ -74,6 +85,8 @@ export default function ContactManager() {
 
   const markAsRead = async (id) => {
     try {
+      if (typeof window === "undefined") return;
+      
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -106,6 +119,8 @@ export default function ContactManager() {
 
     setReplying(true);
     try {
+      if (typeof window === "undefined") return;
+      
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -141,6 +156,8 @@ export default function ContactManager() {
     if (!confirm("Are you sure you want to delete this contact?")) return;
 
     try {
+      if (typeof window === "undefined") return;
+      
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -163,7 +180,7 @@ export default function ContactManager() {
     }
   };
 
-  // Filter and search
+  // Filter and search with safety checks
   const filteredContacts = contacts.filter((contact) => {
     const matchesFilter = (() => {
       switch (filter) {
@@ -178,9 +195,9 @@ export default function ContactManager() {
 
     const matchesSearch =
       searchTerm === "" ||
-      contact.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.message?.toLowerCase().includes(searchTerm.toLowerCase());
+      (contact.name && contact.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (contact.email && contact.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (contact.message && contact.message.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return matchesFilter && matchesSearch;
   });
@@ -214,6 +231,11 @@ export default function ContactManager() {
     replied: contacts.filter((c) => c.isReplied).length,
   };
 
+  // Don't render until client-side
+  if (!isClient) {
+    return null; // or a simple loading spinner
+  }
+
   if (loading) {
     return (
       <AdminLayout>
@@ -231,8 +253,7 @@ export default function ContactManager() {
   }
 
   return (
-   
- <AdminLayout>
+    <AdminLayout>
       <div className="space-y-6">
         {/* Header Section */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-8 text-white shadow-2xl">
@@ -359,18 +380,18 @@ export default function ContactManager() {
                           <div className="flex items-start space-x-3">
                             <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
                               <span className="text-white font-semibold">
-                                {contact.name.charAt(0).toUpperCase()}
+                                {contact.name ? contact.name.charAt(0).toUpperCase() : 'U'}
                               </span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between mb-1">
-                                <h3 className="font-semibold text-slate-800 truncate">{contact.name}</h3>
+                                <h3 className="font-semibold text-slate-800 truncate">{contact.name || 'Unknown'}</h3>
                                 {!contact.isRead && (
                                   <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                                 )}
                               </div>
-                              <p className="text-sm text-slate-600 truncate">{contact.email}</p>
-                              <p className="text-sm text-slate-500 mt-1 line-clamp-2">{contact.message}</p>
+                              <p className="text-sm text-slate-600 truncate">{contact.email || 'No email'}</p>
+                              <p className="text-sm text-slate-500 mt-1 line-clamp-2">{contact.message || 'No message'}</p>
                               
                               <div className="flex items-center justify-between mt-3">
                                 <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border ${status.color}`}>
@@ -378,7 +399,7 @@ export default function ContactManager() {
                                   <span>{status.text}</span>
                                 </span>
                                 <span className="text-xs text-slate-400">
-                                  {new Date(contact.createdAt).toLocaleDateString()}
+                                  {contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'Unknown date'}
                                 </span>
                               </div>
                             </div>
@@ -402,15 +423,15 @@ export default function ContactManager() {
                     <div className="flex items-start space-x-4 mb-4 sm:mb-0">
                       <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center">
                         <span className="text-white font-bold text-xl">
-                          {selectedContact.name.charAt(0).toUpperCase()}
+                          {selectedContact.name ? selectedContact.name.charAt(0).toUpperCase() : 'U'}
                         </span>
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-slate-800 mb-1">{selectedContact.name}</h2>
+                        <h2 className="text-2xl font-bold text-slate-800 mb-1">{selectedContact.name || 'Unknown'}</h2>
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2 text-slate-600">
                             <FiMail size={16} />
-                            <span>{selectedContact.email}</span>
+                            <span>{selectedContact.email || 'No email'}</span>
                           </div>
                           {selectedContact.phone && (
                             <div className="flex items-center space-x-2 text-slate-600">
@@ -420,7 +441,7 @@ export default function ContactManager() {
                           )}
                           <div className="flex items-center space-x-2 text-slate-500">
                             <FiCalendar size={16} />
-                            <span>{new Date(selectedContact.createdAt).toLocaleString()}</span>
+                            <span>{selectedContact.createdAt ? new Date(selectedContact.createdAt).toLocaleString() : 'Unknown date'}</span>
                           </div>
                         </div>
                       </div>
@@ -459,7 +480,7 @@ export default function ContactManager() {
                       <h3 className="font-semibold text-slate-800">Original Message</h3>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-500">
-                      <p className="text-slate-700 leading-relaxed">{selectedContact.message}</p>
+                      <p className="text-slate-700 leading-relaxed">{selectedContact.message || 'No message content'}</p>
                     </div>
                   </div>
 
@@ -467,15 +488,15 @@ export default function ContactManager() {
                   {selectedContact.isReplied && (
                     <div>
                       <div className="flex items-center space-x-2 mb-3">
-                        <FiCornerUpLeft  className="text-green-500" size={18} />
+                        <FiCornerUpLeft className="text-green-500" size={18} />
                         <h3 className="font-semibold text-green-700">Your Reply</h3>
                       </div>
                       <div className="bg-green-50 p-4 rounded-xl border-l-4 border-green-500">
-                        <p className="text-slate-700 leading-relaxed">{selectedContact.replyMessage}</p>
+                        <p className="text-slate-700 leading-relaxed">{selectedContact.replyMessage || 'No reply message'}</p>
                         <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-green-200">
                           <FiClock size={14} className="text-green-500" />
                           <span className="text-green-600 text-sm">
-                            Replied on {new Date(selectedContact.repliedAt).toLocaleString()}
+                            Replied on {selectedContact.repliedAt ? new Date(selectedContact.repliedAt).toLocaleString() : 'Unknown date'}
                           </span>
                         </div>
                       </div>
@@ -487,7 +508,7 @@ export default function ContactManager() {
                     <div className="flex items-center space-x-2 mb-3">
                       <FiSend className="text-orange-500" size={18} />
                       <h3 className="font-semibold text-slate-800">
-                        {selectedContact.isReplied ? 'Send Another Reply' : `Reply to ${selectedContact.name}`}
+                        {selectedContact.isReplied ? 'Send Another Reply' : `Reply to ${selectedContact.name || 'User'}`}
                       </h3>
                     </div>
                     <div className="space-y-4">
@@ -538,4 +559,3 @@ export default function ContactManager() {
     </AdminLayout>
   );
 }
-
