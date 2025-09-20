@@ -47,6 +47,7 @@ const AdminLayout = ({ children }) => {
     { href: '/admin/contact-manger', label: 'Contact Manger', icon: FiMail },
     { href: '/admin/setting_manger', label: 'Setting Manger', icon: FiSettings },
     { href: '/admin/history', label: 'history', icon: FiClock },
+    { href: '/admin/aboutmanger', label: 'aboutmanger', icon: FiClock },
   ];
 
   // ✅ Fixed isActive function with mounted check

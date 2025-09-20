@@ -1,4 +1,3 @@
-// pages/about.js
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -10,7 +9,7 @@ export default function About() {
   useEffect(() => {
     const fetchStory = async () => {
       try {
-        const res = await axios.get('https://food-new-85k1.onrender.com/api/about'); // aapka API endpoint
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/about`);
         setStory(res.data);
       } catch (error) {
         console.error('Error fetching About content:', error);
@@ -21,13 +20,15 @@ export default function About() {
 
   return (
     <div>
-
       {/* Hero Section */}
-      <section className="py-16 bg-orange-50 About_banner">
+      <section
+        className="py-16 About_banner"
+        style={{ backgroundImage: `url(${story?.bannerBg || ""})`, backgroundSize: "cover" }}
+      >
         <div className="container mx-auto px-4 text-center relative">
-          <h1 className="text-4xl font-bold mb-6 text-orange">About FoodDelight</h1>
+          <h1 className="text-4xl font-bold mb-6 text-orange">{story?.bannerTitle || "About FoodDelight"}</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            A culinary journey that began with passion and continues with dedication to serve the finest food experience.
+            {story?.bannerDescription || "A culinary journey that began with passion and continues with dedication..."}
           </p>
         </div>
       </section>
@@ -45,9 +46,9 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-3xl font-bold mb-6">{story?.title || "Our Story"}</h2>
-              <p className="text-gray-600 mb-4">{story?.paragraph1 || "Founded in 2020, FoodDelight started as a small family kitchen with a big dream..."}</p>
-              <p className="text-gray-600 mb-4">{story?.paragraph2 || "We believe that food is more than just sustenance; it's a way to bring people together..."}</p>
-              <p className="text-gray-600">{story?.paragraph3 || "Our team of experienced chefs combines traditional cooking methods with modern techniques..."}</p>
+              <p className="text-gray-600 mb-4">{story?.paragraph1 || "Founded in 2020, FoodDelight started as a small family kitchen..."}</p>
+              <p className="text-gray-600 mb-4">{story?.paragraph2 || "We believe that food is more than just sustenance..."}</p>
+              <p className="text-gray-600">{story?.paragraph3 || "Our team of experienced chefs combines traditional cooking methods..."}</p>
             </div>
           </div>
         </div>
@@ -88,7 +89,6 @@ export default function About() {
           </div>
         </div>
       </section>
-
     </div>
   );
 }
