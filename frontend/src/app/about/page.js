@@ -7,7 +7,7 @@ export default function About() {
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch About data
+  // Fetch About content from API
   useEffect(() => {
     const fetchStory = async () => {
       try {
@@ -22,11 +22,12 @@ export default function About() {
     fetchStory();
   }, []);
 
-  // Helper to generate full URL for images
+  // Helper to get full URL for images
   const getFullUrl = (path) => {
     if (!path) return "";
+    if (path.startsWith("http")) return path; // already full URL
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    return path.startsWith("http") ? path : `https://food-new-85k1.onrender.com${cleanPath}`;
+    return `https://food-new-85k1.onrender.com${cleanPath}`; // backend server URL
   };
 
   if (loading) {
@@ -39,11 +40,13 @@ export default function About() {
 
   return (
     <div>
-      {/* Hero Banner */}
+      {/* Hero Section */}
       <section
         className="py-16 About_banner"
         style={{
-          backgroundImage: story?.bannerBg ? `url(${getFullUrl(story.bannerBg)})` : "none",
+          backgroundImage: story?.bannerBg
+            ? `url(${getFullUrl(story.bannerBg)})`
+            : "none",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -53,7 +56,8 @@ export default function About() {
             {story?.bannerTitle || "About FoodDelight"}
           </h1>
           <p className="text-xl text-gray-100 max-w-3xl mx-auto">
-            {story?.bannerDescription || "A culinary journey that began with passion and continues with dedication..."}
+            {story?.bannerDescription ||
+              "A culinary journey that began with passion and continues with dedication..."}
           </p>
         </div>
       </section>
@@ -62,39 +66,53 @@ export default function About() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
             {/* Story Images */}
             <div className="space-y-4">
-              {story?.images?.length > 0
-                ? story.images.map((img, idx) => (
+              {story?.images?.length > 0 ? (
+                story.images.map((img, idx) => (
                   <img
                     key={idx}
                     src={getFullUrl(img)}
                     alt={`Story image ${idx + 1}`}
                     className="rounded-lg shadow-lg w-full object-cover"
-                    onError={(e) => e.target.src = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"}
+                    onError={(e) =>
+                      (e.target.src =
+                        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop")
+                    }
                   />
                 ))
-                : story?.image
-                  ? <img
-                      src={getFullUrl(story.image)}
-                      alt="Our Story"
-                      className="rounded-lg shadow-lg w-full object-cover"
-                    />
-                  : <img
-                      src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
-                      alt="Our Story"
-                      className="rounded-lg shadow-lg w-full object-cover"
-                    />
-              }
+              ) : story?.image ? (
+                <img
+                  src={getFullUrl(story.image)}
+                  alt="Our Story"
+                  className="rounded-lg shadow-lg w-full object-cover"
+                />
+              ) : (
+                <img
+                  src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
+                  alt="Our Story"
+                  className="rounded-lg shadow-lg w-full object-cover"
+                />
+              )}
             </div>
 
             {/* Story Text */}
             <div>
-              <h2 className="text-3xl font-bold mb-6">{story?.title || "Our Story"}</h2>
-              <p className="text-gray-600 mb-4">{story?.paragraph1 || "Founded in 2020, FoodDelight started as a small family kitchen..."}</p>
-              <p className="text-gray-600 mb-4">{story?.paragraph2 || "We believe that food is more than just sustenance..."}</p>
-              <p className="text-gray-600">{story?.paragraph3 || "Our team of experienced chefs combines traditional cooking methods..."}</p>
+              <h2 className="text-3xl font-bold mb-6">
+                {story?.title || "Our Story"}
+              </h2>
+              <p className="text-gray-600 mb-4">
+                {story?.paragraph1 ||
+                  "Founded in 2020, FoodDelight started as a small family kitchen..."}
+              </p>
+              <p className="text-gray-600 mb-4">
+                {story?.paragraph2 ||
+                  "We believe that food is more than just sustenance..."}
+              </p>
+              <p className="text-gray-600">
+                {story?.paragraph3 ||
+                  "Our team of experienced chefs combines traditional cooking methods..."}
+              </p>
             </div>
           </div>
         </div>
@@ -103,21 +121,41 @@ export default function About() {
       {/* Team Section */}
       <section className="py-16 bg-gray-50 sun_sine">
         <div className="container mx-auto px-4 relative">
-          <h2 className="text-3xl font-bold text-center mb-12 text-orange-500">Meet Our Team</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-orange-500">
+            Meet Our Team
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop&crop=face" alt="Chef" className="w-32 h-32 rounded-full mx-auto mb-4 object-cover" />
-              <h3 className="font-semibold text-lg text-orange-500">Chef Rajesh Kumar</h3>
+              <img
+                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop&crop=face"
+                alt="Chef"
+                className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+              />
+              <h3 className="font-semibold text-lg text-orange-500">
+                Chef Rajesh Kumar
+              </h3>
               <p className="text-gray-600">Head Chef</p>
             </div>
             <div className="text-center">
-              <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=300&h=300&fit=crop&crop=face" alt="Manager" className="w-32 h-32 rounded-full mx-auto mb-4 object-cover" />
-              <h3 className="font-semibold text-lg text-orange-500">Priya Sharma</h3>
+              <img
+                src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=300&h=300&fit=crop&crop=face"
+                alt="Manager"
+                className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+              />
+              <h3 className="font-semibold text-lg text-orange-500">
+                Priya Sharma
+              </h3>
               <p className="text-gray-600">Restaurant Manager</p>
             </div>
             <div className="text-center">
-              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face" alt="Sous Chef" className="w-32 h-32 rounded-full mx-auto mb-4 object-cover" />
-              <h3 className="font-semibold text-lg text-orange-500">Amit Patel</h3>
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face"
+                alt="Sous Chef"
+                className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+              />
+              <h3 className="font-semibold text-lg text-orange-500">
+                Amit Patel
+              </h3>
               <p className="text-gray-600">Sous Chef</p>
             </div>
           </div>
