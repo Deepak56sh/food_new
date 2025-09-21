@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import AdminLayout from "../../../components/AdminLayout";
-import { FiImage, FiEdit, FiPlus } from "react-icons/fi";
+import { FiImage, FiEdit } from "react-icons/fi";
 
 export default function AdminAbout() {
   const [mounted, setMounted] = useState(false);
@@ -12,12 +12,13 @@ export default function AdminAbout() {
     bannerDescription: "",
     bannerBg: null,
     title: "",
-    image: "",
+    images: [],
     paragraph1: "",
     paragraph2: "",
     paragraph3: "",
   });
-  const [preview, setPreview] = useState("");
+  const [bannerPreview, setBannerPreview] = useState("");
+  const [imagesPreview, setImagesPreview] = useState([]);
 
   useEffect(() => setMounted(true), []);
 
@@ -30,8 +31,9 @@ export default function AdminAbout() {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.data) {
-          setFormData({ ...res.data, bannerBg: null });
-          setPreview(res.data.bannerBg || "");
+          setFormData({ ...res.data, bannerBg: null, images: [] });
+          setBannerPreview(res.data.bannerBg || "");
+          setImagesPreview(res.data.images || []);
         }
       } catch (err) {
         console.error(err);
@@ -42,9 +44,16 @@ export default function AdminAbout() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+
     if (files) {
-      setFormData({ ...formData, [name]: files[0] });
-      setPreview(URL.createObjectURL(files[0]));
+      if (name === "images") {
+        const fileArray = Array.from(files);
+        setFormData({ ...formData, images: fileArray });
+        setImagesPreview(fileArray.map(file => URL.createObjectURL(file)));
+      } else if (name === "bannerBg") {
+        setFormData({ ...formData, bannerBg: files[0] });
+        setBannerPreview(URL.createObjectURL(files[0]));
+      }
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -55,8 +64,13 @@ export default function AdminAbout() {
     try {
       const token = localStorage.getItem("token");
       const data = new FormData();
+
       Object.keys(formData).forEach(key => {
-        if (formData[key] !== null) data.append(key, formData[key]);
+        if (Array.isArray(formData[key])) {
+          formData[key].forEach(file => data.append(key, file));
+        } else if (formData[key] !== null) {
+          data.append(key, formData[key]);
+        }
       });
 
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/about`, data, {
@@ -96,7 +110,7 @@ export default function AdminAbout() {
           <div>
             <label>Banner Image</label>
             <input type="file" name="bannerBg" onChange={handleChange} />
-            {preview && <img src={preview} alt="banner preview" className="mt-2 w-64 h-32 object-cover" />}
+            {bannerPreview && <img src={bannerPreview} alt="banner preview" className="mt-2 w-64 h-32 object-cover" />}
           </div>
 
           <div>
@@ -105,8 +119,13 @@ export default function AdminAbout() {
           </div>
 
           <div>
-            <label>Story Image URL</label>
-            <input type="text" name="image" value={formData.image} onChange={handleChange} className="w-full p-2 border rounded" />
+            <label>Story Images</label>
+            <input type="file" name="images" multiple onChange={handleChange} />
+            <div className="flex flex-wrap gap-2 mt-2">
+              {imagesPreview.map((src, i) => (
+                <img key={i} src={src} alt={`story ${i}`} className="w-32 h-20 object-cover" />
+              ))}
+            </div>
           </div>
 
           <div>

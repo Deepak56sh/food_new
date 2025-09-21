@@ -10,7 +10,7 @@ const router = express.Router();
 // ------- Multer Setup --------
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // jaha images save hongi
+    cb(null, 'uploads/'); // images yaha save hongi
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
@@ -24,14 +24,18 @@ router.get('/', async (req, res) => {
     const about = await About.findOne(); // ek hi record rakhenge
     res.json(about);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// ✅ Create / Update About Page (with banner image upload)
-router.post('/', auth, upload.single('bannerBg'), async (req, res) => {
+// ✅ Create / Update About Page (with banner + multiple story images)
+router.post('/', auth, upload.fields([
+  { name: 'bannerBg', maxCount: 1 },
+  { name: 'images', maxCount: 10 } // story ke liye multiple images
+]), async (req, res) => {
   try {
-    const { bannerTitle, bannerDescription, title, paragraph1, paragraph2, paragraph3, image } = req.body;
+    const { bannerTitle, bannerDescription, title, paragraph1, paragraph2, paragraph3 } = req.body;
 
     let updateData = {
       bannerTitle,
@@ -39,13 +43,17 @@ router.post('/', auth, upload.single('bannerBg'), async (req, res) => {
       title,
       paragraph1,
       paragraph2,
-      paragraph3,
-      image
+      paragraph3
     };
 
-    // Agar banner image upload ki hai
-    if (req.file) {
-      updateData.bannerBg = `/uploads/${req.file.filename}`;
+    // ✅ Banner image
+    if (req.files['bannerBg']) {
+      updateData.bannerBg = `/uploads/${req.files['bannerBg'][0].filename}`;
+    }
+
+    // ✅ Story images (multiple)
+    if (req.files['images']) {
+      updateData.images = req.files['images'].map(file => `/uploads/${file.filename}`);
     }
 
     let about = await About.findOne();
@@ -66,6 +74,7 @@ router.post('/', auth, upload.single('bannerBg'), async (req, res) => {
 
     res.json(about);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 });
