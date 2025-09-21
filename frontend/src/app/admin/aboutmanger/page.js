@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import AdminLayout from "../../../components/AdminLayout";
 import axios from "axios";
 
 export default function AboutManager() {
@@ -76,7 +77,7 @@ export default function AboutManager() {
   if (loading) return <div className="py-20 text-center text-gray-500">Loading...</div>;
 
   return (
-    <Adminlayout>
+    <AdminLayout>
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-orange-500">Manage About Page</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -174,6 +175,6 @@ export default function AboutManager() {
         </button>
       </form>
       </div>
-    </Adminlayout>
+    </AdminLayout>
   );
 }
