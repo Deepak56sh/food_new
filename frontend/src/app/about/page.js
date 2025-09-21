@@ -7,6 +7,7 @@ export default function About() {
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch About data
   useEffect(() => {
     const fetchStory = async () => {
       try {
@@ -21,20 +22,24 @@ export default function About() {
     fetchStory();
   }, []);
 
+  // Helper to generate full URL for images
   const getFullUrl = (path) => {
     if (!path) return "";
-    return path.startsWith("http") ? path : `https://food-new-85k1.onrender.com${path}`;
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return path.startsWith("http") ? path : `https://food-new-85k1.onrender.com${cleanPath}`;
   };
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-gray-500">Loading About Page...</div>
+      <div className="py-20 text-center text-gray-500">
+        Loading About Page...
+      </div>
     );
   }
 
   return (
     <div>
-      {/* Hero / Banner Section */}
+      {/* Hero Banner */}
       <section
         className="py-16 About_banner"
         style={{
@@ -55,48 +60,49 @@ export default function About() {
 
       {/* Story Section */}
       <section className="py-16">
-        <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          {/* Images */}
-          <div className="space-y-4">
-            {story?.images?.length > 0 ? (
-              story.images.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={getFullUrl(img)}
-                  alt={`Story image ${idx + 1}`}
-                  className="rounded-lg shadow-lg w-full object-cover"
-                />
-              ))
-            ) : story?.image ? (
-              <img
-                src={getFullUrl(story.image)}
-                alt="Our Story"
-                className="rounded-lg shadow-lg w-full object-cover"
-              />
-            ) : (
-              <img
-                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
-                alt="Our Story"
-                className="rounded-lg shadow-lg w-full object-cover"
-              />
-            )}
-          </div>
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Story Images */}
+            <div className="space-y-4">
+              {story?.images?.length > 0
+                ? story.images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={getFullUrl(img)}
+                    alt={`Story image ${idx + 1}`}
+                    className="rounded-lg shadow-lg w-full object-cover"
+                    onError={(e) => e.target.src = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"}
+                  />
+                ))
+                : story?.image
+                  ? <img
+                      src={getFullUrl(story.image)}
+                      alt="Our Story"
+                      className="rounded-lg shadow-lg w-full object-cover"
+                    />
+                  : <img
+                      src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
+                      alt="Our Story"
+                      className="rounded-lg shadow-lg w-full object-cover"
+                    />
+              }
+            </div>
 
-          {/* Text */}
-          <div>
-            <h2 className="text-3xl font-bold mb-6">{story?.title || "Our Story"}</h2>
-            <p className="text-gray-600 mb-4">{story?.paragraph1 || "Founded in 2020, FoodDelight started as a small family kitchen..."}</p>
-            <p className="text-gray-600 mb-4">{story?.paragraph2 || "We believe that food is more than just sustenance..."}</p>
-            <p className="text-gray-600">{story?.paragraph3 || "Our team of experienced chefs combines traditional cooking methods..."}</p>
+            {/* Story Text */}
+            <div>
+              <h2 className="text-3xl font-bold mb-6">{story?.title || "Our Story"}</h2>
+              <p className="text-gray-600 mb-4">{story?.paragraph1 || "Founded in 2020, FoodDelight started as a small family kitchen..."}</p>
+              <p className="text-gray-600 mb-4">{story?.paragraph2 || "We believe that food is more than just sustenance..."}</p>
+              <p className="text-gray-600">{story?.paragraph3 || "Our team of experienced chefs combines traditional cooking methods..."}</p>
+            </div>
           </div>
-
         </div>
       </section>
 
       {/* Team Section */}
       <section className="py-16 bg-gray-50 sun_sine">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 relative">
           <h2 className="text-3xl font-bold text-center mb-12 text-orange-500">Meet Our Team</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
