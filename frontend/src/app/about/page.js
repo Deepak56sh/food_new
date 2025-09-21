@@ -65,9 +65,8 @@ export default function About() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-4">
-              {/* Multiple story images */}
-              {story?.storyImages?.length > 0 ? (
-                story.storyImages.map((img, idx) => (
+              {story?.storyImages?.length > 0
+                ? story.storyImages.map((img, idx) => (
                   <img
                     key={idx}
                     src={getFullUrl(img)}
@@ -75,13 +74,18 @@ export default function About() {
                     className="rounded-lg shadow-lg w-full object-cover"
                   />
                 ))
-              ) : (
-                <img
-                  src={getFullUrl(story?.image) || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"}
-                  alt="Our Story"
-                  className="rounded-lg shadow-lg w-full object-cover"
-                />
-              )}
+                : story?.image
+                  ? <img
+                    src={getFullUrl(story.image)}
+                    alt="Our Story"
+                    className="rounded-lg shadow-lg w-full object-cover"
+                  />
+                  : <img
+                    src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
+                    alt="Our Story"
+                    className="rounded-lg shadow-lg w-full object-cover"
+                  />
+              }
             </div>
             <div>
               <h2 className="text-3xl font-bold mb-6">
