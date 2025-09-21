@@ -23,9 +23,16 @@ export default function About() {
     fetchStory();
   }, []);
 
+  const getFullUrl = (path) => {
+    if (!path) return "";
+    return path.startsWith("http") ? path : `https://food-new-85k1.onrender.com${path}`;
+  };
+
   if (loading) {
     return (
-      <div className="py-20 text-center text-gray-500">Loading About Page...</div>
+      <div className="py-20 text-center text-gray-500">
+        Loading About Page...
+      </div>
     );
   }
 
@@ -36,7 +43,7 @@ export default function About() {
         className="py-16 About_banner"
         style={{
           backgroundImage: story?.bannerBg
-            ? `url(${story.bannerBg})`
+            ? `url(${getFullUrl(story.bannerBg)})`
             : "none",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -57,15 +64,24 @@ export default function About() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <img
-                src={
-                  story?.image ||
-                  "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
-                }
-                alt="Our Story"
-                className="rounded-lg shadow-lg w-full object-cover"
-              />
+            <div className="space-y-4">
+              {/* Multiple story images */}
+              {story?.storyImages?.length > 0 ? (
+                story.storyImages.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={getFullUrl(img)}
+                    alt={`Story image ${idx + 1}`}
+                    className="rounded-lg shadow-lg w-full object-cover"
+                  />
+                ))
+              ) : (
+                <img
+                  src={getFullUrl(story?.image) || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"}
+                  alt="Our Story"
+                  className="rounded-lg shadow-lg w-full object-cover"
+                />
+              )}
             </div>
             <div>
               <h2 className="text-3xl font-bold mb-6">
