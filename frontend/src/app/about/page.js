@@ -7,12 +7,21 @@ export default function About() {
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const API = process.env.NEXT_PUBLIC_API_URL || "";
+
+  // Normalize URLs
+  const getFullUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    return `${API.replace(/\/$/, "")}/${path.replace(/^\/+/, "")}`;
+  };
+
   // Fetch About content from API
   useEffect(() => {
     const fetchStory = async () => {
       try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/about`);
-        setStory(res.data);
+        const res = await axios.get(`${API}/about`);
+        setStory(res.data || null);
       } catch (error) {
         console.error("Error fetching About content:", error);
       } finally {
@@ -20,15 +29,7 @@ export default function About() {
       }
     };
     fetchStory();
-  }, []);
-
-  // Helper to get full URL for images
-  const getFullUrl = (path) => {
-    if (!path) return "";
-    if (path.startsWith("http")) return path; // already full URL
-    const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    return `https://food-new-85k1.onrender.com${cleanPath}`; // backend server URL
-  };
+  }, [API]);
 
   if (loading) {
     return (
@@ -37,6 +38,22 @@ export default function About() {
       </div>
     );
   }
+
+  if (!story) {
+    return (
+      <div className="py-20 text-center text-gray-500">
+        No About content found.
+      </div>
+    );
+  }
+
+  // Prefer images[] (new), fallback to image (old)
+  const images =
+    Array.isArray(story.images) && story.images.length > 0
+      ? story.images
+      : story.image
+      ? [story.image]
+      : [];
 
   return (
     <div>
@@ -68,8 +85,8 @@ export default function About() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Story Images */}
             <div className="space-y-4">
-              {story?.images?.length > 0 ? (
-                story.images.map((img, idx) => (
+              {images.length > 0 ? (
+                images.map((img, idx) => (
                   <img
                     key={idx}
                     src={getFullUrl(img)}
@@ -81,12 +98,6 @@ export default function About() {
                     }
                   />
                 ))
-              ) : story?.image ? (
-                <img
-                  src={getFullUrl(story.image)}
-                  alt="Our Story"
-                  className="rounded-lg shadow-lg w-full object-cover"
-                />
               ) : (
                 <img
                   src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
