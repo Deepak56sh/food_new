@@ -25,6 +25,7 @@ export default function AboutManager() {
   const [existingStoryImages, setExistingStoryImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch existing About page data
   useEffect(() => {
     const fetchAbout = async () => {
       try {
@@ -37,6 +38,7 @@ export default function AboutManager() {
         setParagraph1(data.paragraph1 || "");
         setParagraph2(data.paragraph2 || "");
         setParagraph3(data.paragraph3 || "");
+
         setExistingStoryImages(data.storyImages || []);
         setBannerPreview(data.bannerBg ? getFullUrl(data.bannerBg) : "");
       } catch (err) {
@@ -48,6 +50,7 @@ export default function AboutManager() {
     fetchAbout();
   }, []);
 
+  // Banner preview for local file selection
   useEffect(() => {
     if (!bannerFile) return;
     const url = URL.createObjectURL(bannerFile);
@@ -85,10 +88,11 @@ export default function AboutManager() {
       const res = await axios.post(`${API}/about`, formData, { headers });
       const about = res.data || {};
 
-      setExistingStoryImages(about.storyImages || []);
+      // Update state with returned data
       setBannerPreview(about.bannerBg ? getFullUrl(about.bannerBg) : "");
-      setStoryFiles([]);
+      setExistingStoryImages(about.storyImages || []);
       setBannerFile(null);
+      setStoryFiles([]);
 
       alert("About Page Updated Successfully!");
     } catch (err) {
@@ -104,55 +108,114 @@ export default function AboutManager() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-orange-500">Manage About Page</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Banner Section */}
+          {/* Banner Title */}
           <div>
             <label className="block mb-2 font-semibold">Banner Title</label>
-            <input type="text" value={bannerTitle} onChange={(e) => setBannerTitle(e.target.value)} className="w-full border p-2 rounded" />
-          </div>
-          <div>
-            <label className="block mb-2 font-semibold">Banner Description</label>
-            <textarea value={bannerDescription} onChange={(e) => setBannerDescription(e.target.value)} className="w-full border p-2 rounded" />
-          </div>
-          <div>
-            <label className="block mb-2 font-semibold">Banner Image</label>
-            <input type="file" onChange={handleBannerChange} accept="image/*" />
-            {bannerPreview && <img src={bannerPreview} alt="Banner preview" className="w-64 h-32 object-cover rounded mt-2" />}
+            <input
+              type="text"
+              value={bannerTitle}
+              onChange={(e) => setBannerTitle(e.target.value)}
+              className="w-full border p-2 rounded"
+            />
           </div>
 
-          {/* Story Section */}
+          {/* Banner Description */}
+          <div>
+            <label className="block mb-2 font-semibold">Banner Description</label>
+            <textarea
+              value={bannerDescription}
+              onChange={(e) => setBannerDescription(e.target.value)}
+              className="w-full border p-2 rounded"
+            />
+          </div>
+
+          {/* Story Title */}
           <div>
             <label className="block mb-2 font-semibold">Story Title</label>
-            <input type="text" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)} className="w-full border p-2 rounded" />
+            <input
+              type="text"
+              value={storyTitle}
+              onChange={(e) => setStoryTitle(e.target.value)}
+              className="w-full border p-2 rounded"
+            />
           </div>
+
+          {/* Paragraphs */}
           <div>
             <label className="block mb-2 font-semibold">Paragraph 1</label>
-            <textarea value={paragraph1} onChange={(e) => setParagraph1(e.target.value)} className="w-full border p-2 rounded" />
+            <textarea
+              value={paragraph1}
+              onChange={(e) => setParagraph1(e.target.value)}
+              className="w-full border p-2 rounded"
+            />
           </div>
           <div>
             <label className="block mb-2 font-semibold">Paragraph 2</label>
-            <textarea value={paragraph2} onChange={(e) => setParagraph2(e.target.value)} className="w-full border p-2 rounded" />
+            <textarea
+              value={paragraph2}
+              onChange={(e) => setParagraph2(e.target.value)}
+              className="w-full border p-2 rounded"
+            />
           </div>
           <div>
             <label className="block mb-2 font-semibold">Paragraph 3</label>
-            <textarea value={paragraph3} onChange={(e) => setParagraph3(e.target.value)} className="w-full border p-2 rounded" />
+            <textarea
+              value={paragraph3}
+              onChange={(e) => setParagraph3(e.target.value)}
+              className="w-full border p-2 rounded"
+            />
           </div>
+
+          {/* Banner Image */}
+          <div>
+            <label className="block mb-2 font-semibold">Banner Image</label>
+            <input type="file" onChange={handleBannerChange} accept="image/*" />
+            {bannerPreview && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-600 mb-1">Banner preview:</p>
+                <img src={bannerPreview} alt="Banner preview" className="w-64 h-32 object-cover rounded" />
+              </div>
+            )}
+          </div>
+
+          {/* Story Images */}
           <div>
             <label className="block mb-2 font-semibold">Story Images (Multiple)</label>
             <input type="file" multiple onChange={handleStoryFilesChange} accept="image/*" />
             <div className="flex flex-wrap gap-2 mt-2">
-              {storyFiles.map((file, idx) => <span key={idx} className="text-gray-600">{file.name}</span>)}
-            </div>
-          </div>
-          <div>
-            <h2 className="font-semibold mb-2">Existing Story Images</h2>
-            <div className="flex flex-wrap gap-2">
-              {existingStoryImages.length > 0 ? existingStoryImages.map((img, idx) => (
-                <img key={idx} src={getFullUrl(img)} alt={`Story ${idx}`} className="w-24 h-24 object-cover rounded shadow" />
-              )) : <p className="text-gray-600">No story images uploaded yet.</p>}
+              {storyFiles.map((file, idx) => (
+                <span key={idx} className="text-gray-600">{file.name}</span>
+              ))}
             </div>
           </div>
 
-          <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600">
+          {/* Existing Story Images */}
+          <div>
+            <h2 className="font-semibold mb-2">Existing Story Images</h2>
+            <div className="flex flex-wrap gap-2">
+              {existingStoryImages.length > 0 ? (
+                existingStoryImages.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img && img.startsWith("http") ? img : getFullUrl(img)}
+                    alt={`Story ${idx}`}
+                    className="w-24 h-24 object-cover rounded shadow"
+                    onError={(e) =>
+                      (e.target.src =
+                        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop")
+                    }
+                  />
+                ))
+              ) : (
+                <p className="text-gray-600">No story images uploaded yet.</p>
+              )}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600"
+          >
             Update About Page
           </button>
         </form>
