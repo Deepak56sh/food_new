@@ -29,54 +29,60 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ Create / Update About Page (with banner + multiple story images)
-router.post('/', auth, upload.fields([
-  { name: 'bannerBg', maxCount: 1 },
-  { name: 'images', maxCount: 10 } // story ke liye multiple images
-]), async (req, res) => {
-  try {
-    const { bannerTitle, bannerDescription, title, paragraph1, paragraph2, paragraph3 } = req.body;
+// ✅ Create / Update About Page (banner + multiple story images)
+router.post(
+  '/',
+  auth,
+  upload.fields([
+    { name: 'bannerBg', maxCount: 1 },      // banner ke liye ek image
+    { name: 'storyImages', maxCount: 10 }   // story ke liye multiple images
+  ]),
+  async (req, res) => {
+    try {
+      const { bannerTitle, bannerDescription, storyTitle, paragraph1, paragraph2, paragraph3 } = req.body;
 
-    let updateData = {
-      bannerTitle,
-      bannerDescription,
-      title,
-      paragraph1,
-      paragraph2,
-      paragraph3
-    };
+      let updateData = {
+        bannerTitle,
+        bannerDescription,
+        storyTitle,
+        paragraph1,
+        paragraph2,
+        paragraph3
+      };
 
-    // ✅ Banner image
-    if (req.files['bannerBg']) {
-      updateData.bannerBg = `/uploads/${req.files['bannerBg'][0].filename}`;
+      // ✅ Banner image
+      if (req.files['bannerBg']) {
+        updateData.bannerBg = `/uploads/${req.files['bannerBg'][0].filename}`;
+      }
+
+      // ✅ Story images (multiple)
+      if (req.files['storyImages']) {
+        updateData.storyImages = req.files['storyImages'].map(file => `/uploads/${file.filename}`);
+      }
+
+      let about = await About.findOne();
+      if (about) {
+        about = await About.findByIdAndUpdate(about._id, updateData, { new: true });
+      } else {
+        about = new About(updateData);
+        await about.save();
+      }
+
+      // ✅ History log
+      await addHistory(
+        "UPSERT_ABOUT",
+        `📄 About page updated`,
+        { aboutId: about._id, updates: updateData },
+        req.user._id,
+        req.ip
+      );
+
+      res.json(about);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
     }
-
-    // ✅ Story images (multiple)
-    if (req.files['images']) {
-      updateData.images = req.files['images'].map(file => `/uploads/${file.filename}`);
-    }
-
-    let about = await About.findOne();
-    if (about) {
-      about = await About.findByIdAndUpdate(about._id, updateData, { new: true });
-    } else {
-      about = new About(updateData);
-      await about.save();
-    }
-
-    await addHistory(
-      "UPSERT_ABOUT",
-      `📄 About page updated`,
-      { aboutId: about._id, updates: updateData },
-      req.user._id,
-      req.ip
-    );
-
-    res.json(about);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
   }
-});
+);
 
 module.exports = router;

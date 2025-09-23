@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function About() {
-  const [story, setStory] = useState(null);
+  const [about, setAbout] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const API = process.env.NEXT_PUBLIC_API_URL || "";
 
-  // Normalize URLs
+  // Helper to normalize image URLs
   const getFullUrl = (path) => {
     if (!path) return "";
     if (path.startsWith("http")) return path;
@@ -18,64 +18,38 @@ export default function About() {
 
   // Fetch About content from API
   useEffect(() => {
-    const fetchStory = async () => {
+    const fetchAbout = async () => {
       try {
         const res = await axios.get(`${API}/about`);
-        setStory(res.data || null);
-      } catch (error) {
-        console.error("Error fetching About content:", error);
+        setAbout(res.data || null);
+      } catch (err) {
+        console.error("Error fetching About content:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchStory();
+    fetchAbout();
   }, [API]);
 
-  if (loading) {
-    return (
-      <div className="py-20 text-center text-gray-500">
-        Loading About Page...
-      </div>
-    );
-  }
+  if (loading) return <div className="py-20 text-center text-gray-500">Loading About Page...</div>;
+  if (!about) return <div className="py-20 text-center text-gray-500">No About content found.</div>;
 
-  if (!story) {
-    return (
-      <div className="py-20 text-center text-gray-500">
-        No About content found.
-      </div>
-    );
-  }
-
-  // Prefer images[] (new), fallback to image (old)
-  const images =
-    Array.isArray(story.images) && story.images.length > 0
-      ? story.images
-      : story.image
-      ? [story.image]
-      : [];
+  const storyImages = about.storyImages || [];
 
   return (
     <div>
-      {/* Hero Section */}
+      {/* Banner Section */}
       <section
         className="py-16 About_banner"
         style={{
-          backgroundImage: story?.bannerBg
-            ? `url(${getFullUrl(story.bannerBg)})`
-            : "none",
+          backgroundImage: about.bannerBg ? `url(${getFullUrl(about.bannerBg)})` : "none",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
         <div className="container mx-auto px-4 text-center relative bg-black/40 p-8 rounded-lg">
-          <h1 className="text-4xl font-bold mb-6 text-orange-500">
-            {story?.bannerTitle || "About FoodDelight"}
-          </h1>
-          <p className="text-xl text-gray-100 max-w-3xl mx-auto">
-            {story?.bannerDescription ||
-              "A culinary journey that began with passion and continues with dedication..."}
-          </p>
+          <h1 className="text-4xl font-bold mb-6 text-orange-500">{about.bannerTitle}</h1>
+          <p className="text-xl text-gray-100 max-w-3xl mx-auto">{about.bannerDescription}</p>
         </div>
       </section>
 
@@ -85,8 +59,8 @@ export default function About() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Story Images */}
             <div className="space-y-4">
-              {images.length > 0 ? (
-                images.map((img, idx) => (
+              {storyImages.length > 0 ? (
+                storyImages.map((img, idx) => (
                   <img
                     key={idx}
                     src={getFullUrl(img)}
@@ -109,21 +83,10 @@ export default function About() {
 
             {/* Story Text */}
             <div>
-              <h2 className="text-3xl font-bold mb-6">
-                {story?.title || "Our Story"}
-              </h2>
-              <p className="text-gray-600 mb-4">
-                {story?.paragraph1 ||
-                  "Founded in 2020, FoodDelight started as a small family kitchen..."}
-              </p>
-              <p className="text-gray-600 mb-4">
-                {story?.paragraph2 ||
-                  "We believe that food is more than just sustenance..."}
-              </p>
-              <p className="text-gray-600">
-                {story?.paragraph3 ||
-                  "Our team of experienced chefs combines traditional cooking methods..."}
-              </p>
+              <h2 className="text-3xl font-bold mb-6">{about.storyTitle || "Our Story"}</h2>
+              <p className="text-gray-600 mb-4">{about.paragraph1}</p>
+              <p className="text-gray-600 mb-4">{about.paragraph2}</p>
+              <p className="text-gray-600">{about.paragraph3}</p>
             </div>
           </div>
         </div>
@@ -142,9 +105,7 @@ export default function About() {
                 alt="Chef"
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
               />
-              <h3 className="font-semibold text-lg text-orange-500">
-                Chef Rajesh Kumar
-              </h3>
+              <h3 className="font-semibold text-lg text-orange-500">Chef Rajesh Kumar</h3>
               <p className="text-gray-600">Head Chef</p>
             </div>
             <div className="text-center">
@@ -153,9 +114,7 @@ export default function About() {
                 alt="Manager"
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
               />
-              <h3 className="font-semibold text-lg text-orange-500">
-                Priya Sharma
-              </h3>
+              <h3 className="font-semibold text-lg text-orange-500">Priya Sharma</h3>
               <p className="text-gray-600">Restaurant Manager</p>
             </div>
             <div className="text-center">
@@ -164,9 +123,7 @@ export default function About() {
                 alt="Sous Chef"
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
               />
-              <h3 className="font-semibold text-lg text-orange-500">
-                Amit Patel
-              </h3>
+              <h3 className="font-semibold text-lg text-orange-500">Amit Patel</h3>
               <p className="text-gray-600">Sous Chef</p>
             </div>
           </div>
