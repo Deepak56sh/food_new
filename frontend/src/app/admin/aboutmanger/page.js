@@ -6,11 +6,16 @@ import axios from "axios";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
+// CORRECTED getFullUrl function - same as Gallery component logic
 const getFullUrl = (path) => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
-  // ✅ Fix: /api/uploads => /uploads
-  return `${API.replace(/\/$/, "")}${path.startsWith('/api/uploads') ? path.replace('/api/uploads', '/uploads') : path.startsWith('/') ? path : `/${path}`}`;
+  
+  // Use base server URL (remove /api from API URL) - same logic as Gallery
+  const baseServerUrl = API.replace('/api', '');
+  const cleanPath = path.replace(/^\/+/, "");
+  
+  return `${baseServerUrl}/${cleanPath}`;
 };
 
 export default function AboutManager() {
@@ -42,6 +47,8 @@ export default function AboutManager() {
         setLoading(true);
         const res = await axios.get(`${API}/about`);
         const data = res.data || {};
+        
+        console.log("Admin - About data received:", data);
 
         setBannerTitle(data.bannerTitle || "");
         setBannerDescription(data.bannerDescription || "");
@@ -52,6 +59,8 @@ export default function AboutManager() {
 
         setExistingStoryImages(data.storyImages || []);
         setBannerPreview(data.bannerBg ? getFullUrl(data.bannerBg) : "");
+        
+        console.log("Story images received:", data.storyImages);
       } catch (err) {
         console.error("fetchAbout err:", err);
         setMessage("Failed to load existing data");
@@ -149,8 +158,12 @@ export default function AboutManager() {
       const headers = { "Content-Type": "multipart/form-data" };
       if (token) headers.Authorization = `Bearer ${token}`;
 
+      console.log("Submitting form data...");
+
       const res = await axios.post(`${API}/about`, formData, { headers });
       const about = res.data || {};
+
+      console.log("Response received:", about);
 
       setBannerPreview(about.bannerBg ? getFullUrl(about.bannerBg) : "");
       setExistingStoryImages(about.storyImages || []);
@@ -259,14 +272,27 @@ export default function AboutManager() {
                 <h2 className="text-xl font-semibold mb-4 text-gray-800">Current Story Images</h2>
                 <p className="text-sm text-gray-600 mb-4">Uploading new images will replace these.</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {existingStoryImages.map((img, i) => (
-                    <div key={i} className="relative group">
-                      <img src={getFullUrl(img)} alt={`Story ${i+1}`} className="w-full h-24 object-cover rounded-lg shadow-md" onError={e => { e.target.src = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"; }} />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                        <span className="text-white text-xs">Current</span>
+                  {existingStoryImages.map((img, i) => {
+                    const imageUrl = getFullUrl(img);
+                    console.log(`Current image ${i + 1} URL:`, imageUrl);
+                    return (
+                      <div key={i} className="relative group">
+                        <img 
+                          src={imageUrl} 
+                          alt={`Story ${i+1}`} 
+                          className="w-full h-24 object-cover rounded-lg shadow-md" 
+                          onError={(e) => { 
+                            console.error(`Failed to load current image: ${imageUrl}`);
+                            e.target.src = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"; 
+                          }} 
+                          onLoad={() => console.log(`Successfully loaded current image: ${imageUrl}`)}
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                          <span className="text-white text-xs">Current</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
