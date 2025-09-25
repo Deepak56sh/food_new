@@ -6,16 +6,19 @@ import axios from "axios";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
-// ✅ IMPROVED getFullUrl with cache busting
+// In AboutManager.js - FIX THE getFullUrl FUNCTION
 const getFullUrl = (path) => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
   
+  // Use the SAME logic as Gallery component
+  if (path.startsWith("/uploads")) {
+    return `https://food-new-85k1.onrender.com${path}`;
+  }
+  
   const baseServerUrl = API.replace('/api', '');
   const cleanPath = path.replace(/^\/+/, "");
-  
-  // Add cache busting parameter to prevent cached errors
-  return `${baseServerUrl}/${cleanPath}?t=${Date.now()}`;
+  return `${baseServerUrl}/${cleanPath}`;
 };
 
 // ✅ Image loading with retry mechanism
