@@ -6,16 +6,47 @@ import axios from "axios";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
-// CORRECTED getFullUrl function - same as Gallery component logic
+// ✅ IMPROVED getFullUrl with cache busting
 const getFullUrl = (path) => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
   
-  // Use base server URL (remove /api from API URL) - same logic as Gallery
   const baseServerUrl = API.replace('/api', '');
   const cleanPath = path.replace(/^\/+/, "");
   
-  return `${baseServerUrl}/${cleanPath}`;
+  // Add cache busting parameter to prevent cached errors
+  return `${baseServerUrl}/${cleanPath}?t=${Date.now()}`;
+};
+
+// ✅ Image loading with retry mechanism
+const loadImageWithRetry = (url, maxRetries = 3, delay = 1000) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    let retries = 0;
+    
+    const attemptLoad = () => {
+      img.onload = () => resolve(img);
+      img.onerror = () => {
+        retries++;
+        if (retries <= maxRetries) {
+          console.log(`Retrying image load (${retries}/${maxRetries}) for:`, url);
+          setTimeout(() => {
+            // Add cache busting parameter for retry
+            const retryUrl = url.includes('?') ? `${url}&retry=${retries}` : `${url}?retry=${retries}`;
+            img.src = retryUrl;
+          }, delay * retries);
+        } else {
+          reject(new Error(`Failed to load image after ${maxRetries} attempts`));
+        }
+      };
+      
+      // Initial load with cache busting
+      const initialUrl = url.includes('?') ? url : `${url}?t=${Date.now()}`;
+      img.src = initialUrl;
+    };
+    
+    attemptLoad();
+  });
 };
 
 export default function AboutManager() {
@@ -39,6 +70,22 @@ export default function AboutManager() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [imageLoadStatus, setImageLoadStatus] = useState({});
+
+  // ✅ Improved image loading with retry
+  const handleImageLoad = async (imageUrl, imageIndex) => {
+    try {
+      setImageLoadStatus(prev => ({ ...prev, [imageIndex]: 'loading' }));
+      
+      await loadImageWithRetry(imageUrl);
+      
+      setImageLoadStatus(prev => ({ ...prev, [imageIndex]: 'loaded' }));
+      console.log(`✅ Successfully loaded image ${imageIndex + 1}:`, imageUrl);
+    } catch (error) {
+      setImageLoadStatus(prev => ({ ...prev, [imageIndex]: 'error' }));
+      console.error(`❌ Failed to load image ${imageIndex + 1}:`, imageUrl);
+    }
+  };
 
   // Fetch About page data
   useEffect(() => {
@@ -61,6 +108,14 @@ export default function AboutManager() {
         setBannerPreview(data.bannerBg ? getFullUrl(data.bannerBg) : "");
         
         console.log("Story images received:", data.storyImages);
+
+        // ✅ Load existing images with retry
+        if (data.storyImages && data.storyImages.length > 0) {
+          data.storyImages.forEach((img, index) => {
+            const imageUrl = getFullUrl(img);
+            handleImageLoad(imageUrl, index);
+          });
+        }
       } catch (err) {
         console.error("fetchAbout err:", err);
         setMessage("Failed to load existing data");
@@ -155,8 +210,10 @@ export default function AboutManager() {
       storyFiles.forEach(f => formData.append("storyImages", f));
 
       const token = localStorage.getItem("token");
-      const headers = { "Content-Type": "multipart/form-data" };
-      if (token) headers.Authorization = `Bearer ${token}`;
+      const headers = { 
+        "Content-Type": "multipart/form-data",
+        ...(token && { Authorization: `Bearer ${token}` })
+      };
 
       console.log("Submitting form data...");
 
@@ -165,11 +222,21 @@ export default function AboutManager() {
 
       console.log("Response received:", about);
 
+      // ✅ Reset all states properly
       setBannerPreview(about.bannerBg ? getFullUrl(about.bannerBg) : "");
       setExistingStoryImages(about.storyImages || []);
       setBannerFile(null);
       setStoryFiles([]);
       setStoryPreviews([]);
+      setImageLoadStatus({}); // Reset image load status
+
+      // ✅ Reload images with retry after update
+      if (about.storyImages && about.storyImages.length > 0) {
+        about.storyImages.forEach((img, index) => {
+          const imageUrl = getFullUrl(img);
+          handleImageLoad(imageUrl, index);
+        });
+      }
 
       // Reset input elements
       const bannerInput = document.getElementById("bannerInput");
@@ -193,6 +260,16 @@ export default function AboutManager() {
   const clearMessage = () => {
     setMessage("");
     setMessageType("");
+  };
+
+  // ✅ Get fallback image based on index
+  const getFallbackImage = (index) => {
+    const fallbacks = [
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=600&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&h=400&fit=crop"
+    ];
+    return fallbacks[index % fallbacks.length];
   };
 
   if (loading) {
@@ -223,7 +300,7 @@ export default function AboutManager() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Banner */}
+            {/* Banner Section */}
             <div className="bg-gray-50 p-6 rounded-lg">
               <h2 className="text-xl font-semibold mb-6 text-gray-800">Banner Section</h2>
               <div className="mb-6">
@@ -242,7 +319,7 @@ export default function AboutManager() {
               </div>
             </div>
 
-            {/* Story */}
+            {/* Story Section */}
             <div className="bg-gray-50 p-6 rounded-lg">
               <h2 className="text-xl font-semibold mb-6 text-gray-800">Story Section</h2>
               <div className="mb-6">
@@ -274,22 +351,30 @@ export default function AboutManager() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {existingStoryImages.map((img, i) => {
                     const imageUrl = getFullUrl(img);
-                    console.log(`Current image ${i + 1} URL:`, imageUrl);
+                    const status = imageLoadStatus[i] || 'loading';
+                    
                     return (
                       <div key={i} className="relative group">
                         <img 
-                          src={imageUrl} 
+                          src={status === 'loaded' ? imageUrl : getFallbackImage(i)}
                           alt={`Story ${i+1}`} 
                           className="w-full h-24 object-cover rounded-lg shadow-md" 
                           onError={(e) => { 
                             console.error(`Failed to load current image: ${imageUrl}`);
-                            e.target.src = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"; 
+                            e.target.src = getFallbackImage(i);
                           }} 
-                          onLoad={() => console.log(`Successfully loaded current image: ${imageUrl}`)}
+                          onLoad={() => console.log(`✅ Successfully loaded current image: ${imageUrl}`)}
                         />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <span className="text-white text-xs">Current</span>
+                          <span className="text-white text-xs">
+                            {status === 'loading' ? 'Loading...' : status === 'error' ? 'Error' : 'Current'}
+                          </span>
                         </div>
+                        {status === 'loading' && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -297,7 +382,7 @@ export default function AboutManager() {
               </div>
             )}
 
-            {/* Submit */}
+            {/* Submit Button */}
             <div className="flex justify-end pt-6 border-t">
               <button type="submit" disabled={submitting} className={`px-8 py-3 rounded-lg font-semibold text-white transition-all duration-300 ${submitting ? "bg-gray-400 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600 hover:shadow-lg"}`}>
                 {submitting ? "Updating..." : "Update About Page"}

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,22 +7,63 @@ import axios from "axios";
 export default function About() {
   const [about, setAbout] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [imageStatus, setImageStatus] = useState({});
 
   const API = process.env.NEXT_PUBLIC_API_URL || "";
 
-  // Helper to normalize image URLs
+  // ✅ Improved image loading with retry
+  const loadImageWithRetry = (url, maxRetries = 3, delay = 1000) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      let retries = 0;
+      
+      const attemptLoad = () => {
+        img.onload = () => resolve(img);
+        img.onerror = () => {
+          retries++;
+          if (retries <= maxRetries) {
+            setTimeout(() => {
+              const retryUrl = url.includes('?') ? `${url}&retry=${retries}` : `${url}?retry=${retries}`;
+              img.src = retryUrl;
+            }, delay * retries);
+          } else {
+            reject(new Error(`Failed to load image after ${maxRetries} attempts`));
+          }
+        };
+        
+        const initialUrl = url.includes('?') ? url : `${url}?t=${Date.now()}`;
+        img.src = initialUrl;
+      };
+      
+      attemptLoad();
+    });
+  };
+
   const getFullUrl = (path) => {
     if (!path) return "";
     if (path.startsWith("http")) return path;
     return `${API.replace(/\/$/, "")}/${path.replace(/^\/+/, "")}`;
   };
 
-  // Fetch About content from API
   useEffect(() => {
     const fetchAbout = async () => {
       try {
         const res = await axios.get(`${API}/about`);
         setAbout(res.data || null);
+        
+        // Preload images with retry
+        if (res.data?.storyImages) {
+          res.data.storyImages.forEach((img, index) => {
+            const imageUrl = getFullUrl(img);
+            loadImageWithRetry(imageUrl)
+              .then(() => {
+                setImageStatus(prev => ({ ...prev, [index]: 'loaded' }));
+              })
+              .catch(() => {
+                setImageStatus(prev => ({ ...prev, [index]: 'error' }));
+              });
+          });
+        }
       } catch (err) {
         console.error("Error fetching About content:", err);
       } finally {
@@ -42,7 +84,7 @@ export default function About() {
       <section
         className="py-16 About_banner"
         style={{
-          backgroundImage: about.bannerBg ? `url(${getFullUrl(about.bannerBg)})` : "none",
+          backgroundImage: about.bannerBg ? `url(${getFullUrl(about.bannerBg)}?t=${Date.now()})` : "none",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -60,18 +102,28 @@ export default function About() {
             {/* Story Images */}
             <div className="space-y-4">
               {storyImages.length > 0 ? (
-                storyImages.map((img, idx) => (
-                  <img
-                    key={idx}
-                    src={getFullUrl(img)}
-                    alt={`Story image ${idx + 1}`}
-                    className="rounded-lg shadow-lg w-full object-cover"
-                    onError={(e) =>
-                      (e.target.src =
-                        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop")
-                    }
-                  />
-                ))
+                storyImages.map((img, idx) => {
+                  const status = imageStatus[idx] || 'loading';
+                  const fallbackImage = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop";
+                  
+                  return (
+                    <div key={idx} className="relative">
+                      <img
+                        src={status === 'loaded' ? `${getFullUrl(img)}?t=${Date.now()}` : fallbackImage}
+                        alt={`Story image ${idx + 1}`}
+                        className="rounded-lg shadow-lg w-full object-cover"
+                        onError={(e) => {
+                          e.target.src = fallbackImage;
+                        }}
+                      />
+                      {status === 'loading' && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-lg">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               ) : (
                 <img
                   src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
@@ -92,8 +144,8 @@ export default function About() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-16 bg-gray-50 sun_sine">
+      {/* Team Section (unchanged) */}
+        <section className="py-16 bg-gray-50 sun_sine">
         <div className="container mx-auto px-4 relative">
           <h2 className="text-3xl font-bold text-center mb-12 text-orange-500">
             Meet Our Team
